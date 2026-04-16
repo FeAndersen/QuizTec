@@ -1,8 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.font.TextAttribute; // Importante para o super negrito
+import java.awt.event.*;
+import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.util.HashMap;
@@ -22,6 +21,7 @@ public class Cadastro extends JFrame {
         int larguraTela = (int) tk.getScreenSize().getWidth();
         int alturaTela = (int) tk.getScreenSize().getHeight();
 
+        // Painel de Fundo
         JPanel painelFundo = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -33,21 +33,7 @@ public class Cadastro extends JFrame {
         painelFundo.setLayout(null);
         setContentPane(painelFundo);
 
-        JPanel painelControles = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        painelControles.setOpaque(false);
-        painelControles.setBounds(larguraTela - 120, 0, 120, 50);
-
-        JButton btnMin = criarBotaoBarra("-");
-        JButton btnFechar = criarBotaoBarra("X");
-        btnFechar.setBackground(new Color(180, 0, 0));
-
-        btnMin.addActionListener(e -> setState(Frame.ICONIFIED));
-        btnFechar.addActionListener(e -> System.exit(0));
-
-        painelControles.add(btnMin);
-        painelControles.add(btnFechar);
-        painelFundo.add(painelControles);
-
+        // Lógica do Bloco Central
         int larguraBloco = (int) (larguraTela * 0.85);
         int alturaBloco = (int) (alturaTela * 0.85);
         int xCentro = (larguraTela - larguraBloco) / 2;
@@ -87,7 +73,6 @@ public class Cadastro extends JFrame {
         JLabel txtTitulo = new JLabel("Novo Cadastro");
         txtTitulo.setForeground(Color.WHITE);
         txtTitulo.setFont(fontTitulo); 
-        // Aumentei a largura do limite (+200) para garantir que caiba em 1 linha no tamanho 64
         txtTitulo.setBounds(fieldX, centroY - 250, fieldW + 200, 100); 
         blocoCentral.add(txtTitulo);
 
@@ -122,25 +107,105 @@ public class Cadastro extends JFrame {
         blocoCentral.add(lblLink);
 
         painelFundo.add(blocoCentral);
+
+        // --- NOVO PADRÃO DE BOTÕES (Idêntico ao Login) ---
+        JButton btnFechar = criarBotaoControle("X", larguraTela - 50, 0);
+        JButton btnMin = criarBotaoControle("-", larguraTela - 100, 0);
+        
+        painelFundo.add(btnFechar);
+        painelFundo.add(btnMin);
+        
+        // Garante que os botões fiquem sempre na frente de tudo
+        painelFundo.setComponentZOrder(btnFechar, 0);
+        painelFundo.setComponentZOrder(btnMin, 0);
+
+        // --- CORREÇÃO DO MINIMIZAR ---
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+                setExtendedState(JFrame.MAXIMIZED_BOTH);
+                repaint();
+                revalidate();
+            }
+        });
+
         setVisible(true);
     }
 
+    // --- NOVO MÉTODO ENCAPSULADO (100% Invisível até o Hover) ---
+    private JButton criarBotaoControle(String texto, int x, int y) {
+        
+        // Transparência total (Alpha = 0)
+        Color corInvisivel = new Color(0, 0, 0, 0); 
+        Color corHover;
+        
+        if (texto.equals("X")) {
+            corHover = new Color(232, 17, 35); // Vermelho vivo
+        } else {
+            corHover = new Color(100, 100, 100); // Cinza
+        }
+
+        JButton b = new JButton(texto) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(getBackground());
+                g.fillRect(0, 0, getWidth(), getHeight());
+                super.paintComponent(g);
+            }
+        };
+
+        b.setFont(new Font("Arial", Font.BOLD, 24));
+        b.setBounds(x, y, 50, 40); 
+        b.setMargin(new Insets(0, 0, 0, 0)); 
+        
+        b.setBackground(corInvisivel); 
+        b.setForeground(Color.WHITE); 
+
+        b.setOpaque(false);
+        b.setContentAreaFilled(false);
+        b.setFocusPainted(false);
+        b.setBorderPainted(false);
+        b.setRolloverEnabled(false);
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        if (texto.equals("X")) {
+            b.addActionListener(e -> System.exit(0));
+        } else if (texto.equals("-")) {
+            b.addActionListener(e -> setState(Frame.ICONIFIED));
+        }
+
+        b.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                b.setBackground(corHover); 
+                b.repaint();
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                b.setBackground(corInvisivel); 
+                b.repaint();
+            }
+        });
+
+        return b;
+    }
+
+    // --- MÉTODOS MANTIDOS ---
     private void carregarFontes() {
         try {
             File fontFile = new File("RobotoSerif-Bold.ttf");
             Font baseFont = Font.createFont(Font.TRUETYPE_FONT, fontFile);
             
-            // LÓGICA PARA O "SUPER NEGRITO"
             Map<TextAttribute, Object> atributos = new HashMap<>();
-            atributos.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_EXTRABOLD); // Peso extra!
-            atributos.put(TextAttribute.SIZE, 64f); // Tamanho fixo 64
+            atributos.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_EXTRABOLD); 
+            atributos.put(TextAttribute.SIZE, 64f); 
             
             fontTitulo = baseFont.deriveFont(atributos); 
             robotoSemiBold40 = baseFont.deriveFont(Font.BOLD, 36f);
             robotoRegular20 = baseFont.deriveFont(Font.PLAIN, 18f);
         } catch (Exception e) {
             Map<TextAttribute, Object> fallback = new HashMap<>();
-            fallback.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_ULTRABOLD); // Peso extra para fallback
+            fallback.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_ULTRABOLD); 
             fallback.put(TextAttribute.SIZE, 64f);
             fallback.put(TextAttribute.FAMILY, "Serif");
             
@@ -187,16 +252,6 @@ public class Cadastro extends JFrame {
         } catch (Exception e) {
             System.out.println("Erro ao carregar imagem: " + path);
         }
-    }
-
-    private JButton criarBotaoBarra(String simbolo) {
-        JButton btn = new JButton(simbolo);
-        btn.setPreferredSize(new Dimension(40, 30));
-        btn.setBackground(new Color(50, 50, 50));
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setBorder(null);
-        return btn;
     }
 
     public static void main(String[] args) {
