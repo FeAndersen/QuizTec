@@ -8,11 +8,11 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Cadastro extends JFrame {
+public class Login extends JFrame {
 
     private Font fontTitulo, robotoSemiBold40, robotoRegular20;
 
-    public Cadastro() {
+    public Login() {
         carregarFontes();
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -80,22 +80,21 @@ public class Cadastro extends JFrame {
         adicionarLogo(blocoCentral, "Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
         adicionarLogo(blocoCentral, "Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
 
-        int fieldW = (int) (larguraBloco * 0.35); 
+        int fieldW = (int) (larguraBloco * 0.32);
         int fieldH = 55;
         int fieldX = (int) (larguraBloco * 0.75) - (fieldW / 2);
 
-        JLabel txtTitulo = new JLabel("Novo Cadastro");
+        JLabel txtTitulo = new JLabel("Login");
         txtTitulo.setForeground(Color.WHITE);
-        txtTitulo.setFont(fontTitulo); 
-        // Aumentei a largura do limite (+200) para garantir que caiba em 1 linha no tamanho 64
-        txtTitulo.setBounds(fieldX, centroY - 250, fieldW + 200, 100); 
+        txtTitulo.setFont(fontTitulo);
+        // Espaço extra na largura (+100) para garantir que a fonte mais grossa caiba
+        txtTitulo.setBounds(fieldX, centroY - 240, fieldW + 100, 100); 
         blocoCentral.add(txtTitulo);
 
-        blocoCentral.add(criarCampo("Inserir email", fieldX, centroY - 120, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir senha", fieldX, centroY - 40, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Confirmação da senha", fieldX, centroY + 40, fieldW, fieldH));
+        blocoCentral.add(criarCampo("Inserir email", fieldX, centroY - 90, fieldW, fieldH));
+        blocoCentral.add(criarCampo("Inserir senha", fieldX, centroY + 0, fieldW, fieldH));
 
-        JButton btnSeguir = new JButton("Seguir") {
+        JButton btnEntrar = new JButton("Entrar") {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -105,19 +104,19 @@ public class Cadastro extends JFrame {
                 super.paintComponent(g);
             }
         };
-        btnSeguir.setBounds(fieldX, centroY + 140, fieldW, 70);
-        btnSeguir.setForeground(Color.WHITE);
-        btnSeguir.setFont(robotoSemiBold40);
-        btnSeguir.setContentAreaFilled(false);
-        btnSeguir.setBorderPainted(false);
-        btnSeguir.setFocusPainted(false);
-        btnSeguir.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        blocoCentral.add(btnSeguir);
+        btnEntrar.setBounds(fieldX, centroY + 110, fieldW, 70);
+        btnEntrar.setForeground(Color.WHITE);
+        btnEntrar.setFont(robotoSemiBold40);
+        btnEntrar.setContentAreaFilled(false);
+        btnEntrar.setBorderPainted(false);
+        btnEntrar.setFocusPainted(false);
+        btnEntrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        blocoCentral.add(btnEntrar);
 
-        JLabel lblLink = new JLabel("<html><u>já possui login? entrar</u></html>");
+        JLabel lblLink = new JLabel("<html><u>não tem login de acesso?</u></html>");
         lblLink.setForeground(Color.WHITE);
         lblLink.setFont(new Font("Arial", Font.PLAIN, 18));
-        lblLink.setBounds(fieldX, centroY + 220, fieldW, 30);
+        lblLink.setBounds(fieldX, centroY + 190, fieldW, 30);
         lblLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
         blocoCentral.add(lblLink);
 
@@ -135,12 +134,12 @@ public class Cadastro extends JFrame {
             atributos.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_EXTRABOLD); // Peso extra!
             atributos.put(TextAttribute.SIZE, 64f); // Tamanho fixo 64
             
-            fontTitulo = baseFont.deriveFont(atributos); 
+            fontTitulo = baseFont.deriveFont(atributos);
             robotoSemiBold40 = baseFont.deriveFont(Font.BOLD, 36f);
             robotoRegular20 = baseFont.deriveFont(Font.PLAIN, 18f);
         } catch (Exception e) {
             Map<TextAttribute, Object> fallback = new HashMap<>();
-            fallback.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_ULTRABOLD); // Peso extra para fallback
+            fallback.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_EXTRABOLD);
             fallback.put(TextAttribute.SIZE, 64f);
             fallback.put(TextAttribute.FAMILY, "Serif");
             
@@ -200,6 +199,6 @@ public class Cadastro extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Cadastro());
+        SwingUtilities.invokeLater(() -> new Login());
     }
 }
