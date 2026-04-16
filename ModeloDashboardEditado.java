@@ -38,14 +38,13 @@ public class ModeloDashboardEditado extends JFrame {
         header.setLayout(null);
 
         // --- Botões de Controle de Janela (Canto Direito) ---
-        JButton btnFechar = criarBotaoControle("X", larguraTela - 50, 20);
-        JButton btnMin = criarBotaoControle("-", larguraTela - 100, 20);
+        JButton btnFechar = criarBotaoControle("X", larguraTela - 50, 0);
+        JButton btnMin = criarBotaoControle("-", larguraTela - 100, 0);
         header.add(btnFechar);
         header.add(btnMin);
 
         // --- Botão Voltar (Canto Esquerdo) ---
-        // Passamos a posição x=40. O 'y' será ajustado inteligentemente pelo método.
-        JButton btnVoltar = criarBotaoControle("↰", 40, 20);
+        JButton btnVoltar = criarBotaoControle("↰", 40, 100);
         header.add(btnVoltar);
 
         // Título QuizTec no Header
@@ -131,7 +130,7 @@ public class ModeloDashboardEditado extends JFrame {
             // Símbolo nativo do Windows em tamanho grande
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             // Botão maior (60x60) e centralizado (y=10) para caber a fonte 48 sem cortar
-            b.setBounds(x, 10, 60, 60); 
+            b.setBounds(x, 4, 60, 60); 
         } else {
             // "X" e "-"
             b.setFont(new Font("Arial", Font.BOLD, 24));
