@@ -26,7 +26,7 @@ public class Cadastro extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("images/fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -63,8 +63,8 @@ public class Cadastro extends JFrame {
         blocoCentral.setBounds(xCentro, yCentro, larguraBloco, alturaBloco);
 
         int centroY = alturaBloco / 2;
-        adicionarLogo(blocoCentral, "Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
-        adicionarLogo(blocoCentral, "Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
+        adicionarLogo(blocoCentral, "images/Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
+        adicionarLogo(blocoCentral, "images/Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
 
         int fieldW = (int) (larguraBloco * 0.35); 
         int fieldH = 55;

@@ -3,11 +3,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 
-public class MenuAluno extends JFrame {
+public class CriarSelecaoNivel extends JFrame {
 
-    private Font robotoBold32, robotoBold24, robotoBold36, robotoBold21;
+    private Font robotoBold32, robotoBold24, robotoBold36, robotoBold21, robotoBold18;
 
-    public MenuAluno() {
+    public CriarSelecaoNivel() {
         carregarFontes();
 
         setUndecorated(true);
@@ -36,7 +36,7 @@ public class MenuAluno extends JFrame {
 
         header.add(criarBotaoControle("X", larguraTela - 50, 0));
         header.add(criarBotaoControle("-", larguraTela - 100, 0));
-        header.add(criarBotaoControle("↰", 40, 5));
+        header.add(criarBotaoControle("↰", 40, 0));
 
         JLabel txtQuizTec = new JLabel("QuizTec");
         txtQuizTec.setForeground(Color.WHITE);
@@ -44,7 +44,8 @@ public class MenuAluno extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, Aluno!", SwingConstants.RIGHT);
+        // Atualizado para o Professor
+        JLabel txtOla = new JLabel("Olá, professor", SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -68,7 +69,7 @@ public class MenuAluno extends JFrame {
         cardPrincipal.setOpaque(false);
         cardPrincipal.setBounds(xCard, yCard, larguraCard, alturaCard);
 
-        JLabel lblTituloCard = new JLabel("O que vamos praticar hoje?", SwingConstants.CENTER);
+        JLabel lblTituloCard = new JLabel("Qual nível de jogo você deseja criar?", SwingConstants.CENTER);
         lblTituloCard.setForeground(Color.WHITE);
         lblTituloCard.setFont(robotoBold32);
         lblTituloCard.setBounds(0, 60, larguraCard, 50);
@@ -79,12 +80,11 @@ public class MenuAluno extends JFrame {
         int espaco = 50; 
         int larguraTotalBotoes = (largBotao * 3) + (espaco * 2);
         int startX = (larguraCard - larguraTotalBotoes) / 2;
-        int startY = 180;
+        int startY = 200;
 
-        // Botoes agora usam as imagens PNG da pasta images/
-        cardPrincipal.add(criarBotaoCard("Iniciar Prática", "", "images/science.png", startX, startY, largBotao, altBotao, 1));
-        cardPrincipal.add(criarBotaoCard("Meu", "desempenho", "images/bar_chart.png", startX + largBotao + espaco, startY, largBotao, altBotao, 2));
-        cardPrincipal.add(criarBotaoCard("Sair", "", "images/logout.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao, 3));
+        cardPrincipal.add(criarBotaoNivel("Fácil", "Identificação", "Para aprender os nomes", "images/labs.png", startX, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoNivel("Médio", "Funções", "Para que serve;cada material?", "images/biotech.png", startX + largBotao + espaco, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoNivel("Difícil", "Sistemas", "Montagem de experimentos", "images/fluid_med.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao));
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);
@@ -101,11 +101,8 @@ public class MenuAluno extends JFrame {
         setVisible(true);
     }
 
-    private JButton criarBotaoCard(String linha1, String linha2, String caminhoIcone, int x, int y, int w, int h, int idAcao) {
-        Color corFundo = Color.WHITE;
-        Color corFundoHover = new Color(240, 240, 240);
-        Color corAzulEscuro = new Color(30, 55, 90);
-
+    private JButton criarBotaoNivel(String txtTopo, String txtMeio, String txtBase, String caminhoIcone, int x, int y, int w, int h) {
+        Color corAzulEscuro = new Color(30, 55, 90); 
         JButton b = new JButton() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -115,54 +112,66 @@ public class MenuAluno extends JFrame {
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
                 
-                // Desenhar a imagem PNG
                 try {
                     ImageIcon icon = new ImageIcon(caminhoIcone);
                     Image img = icon.getImage();
                     int iconDim = 100;
                     int iconX = (getWidth() - iconDim) / 2;
-                    int iconY = 50; 
+                    int iconY = 70;
                     g2.drawImage(img, iconX, iconY, iconDim, iconDim, null);
                 } catch (Exception e) {
                     System.out.println("Erro ao carregar: " + caminhoIcone);
                 }
 
                 g2.setColor(corAzulEscuro);
+                FontMetrics fm;
+                
+                g2.setFont(robotoBold24);
+                fm = g2.getFontMetrics();
+                g2.drawString(txtTopo, (getWidth() - fm.stringWidth(txtTopo)) / 2, 45);
+
                 g2.setFont(robotoBold36);
-                FontMetrics fm = g2.getFontMetrics();
-                if (linha2.isEmpty()) {
-                    g2.drawString(linha1, (getWidth() - fm.stringWidth(linha1)) / 2, getHeight() - 60);
+                fm = g2.getFontMetrics();
+                g2.drawString(txtMeio, (getWidth() - fm.stringWidth(txtMeio)) / 2, getHeight() - 80);
+
+                g2.setFont(robotoBold18); 
+                fm = g2.getFontMetrics();
+                
+                if (txtBase.contains(";")) {
+                    String[] partes = txtBase.split(";");
+                    g2.drawString(partes[0], (getWidth() - fm.stringWidth(partes[0])) / 2, getHeight() - 45);
+                    g2.drawString(partes[1], (getWidth() - fm.stringWidth(partes[1])) / 2, getHeight() - 25);
                 } else {
-                    g2.drawString(linha1, (getWidth() - fm.stringWidth(linha1)) / 2, getHeight() - 75);
-                    g2.drawString(linha2, (getWidth() - fm.stringWidth(linha2)) / 2, getHeight() - 35);
+                    g2.drawString(txtBase, (getWidth() - fm.stringWidth(txtBase)) / 2, getHeight() - 35);
                 }
                 g2.dispose();
             }
         };
 
         b.setBounds(x, y, w, h);
-        b.setBackground(corFundo);
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setBackground(Color.WHITE);
         b.setOpaque(false);
         b.setContentAreaFilled(false);
         b.setFocusPainted(false);
         b.setBorderPainted(false);
-
-        b.addActionListener(e -> {
-            if (idAcao == 1) { this.dispose(); new SelecaoNivel().setVisible(true); }
-            else if (idAcao == 3) { this.dispose(); new Login().setVisible(true); }
-        });
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         b.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) { b.setBackground(corFundoHover); b.repaint(); }
-            @Override public void mouseExited(MouseEvent e) { b.setBackground(corFundo); b.repaint(); }
+            @Override public void mouseEntered(MouseEvent e) { b.setBackground(new Color(240, 240, 240)); b.repaint(); }
+            @Override public void mouseExited(MouseEvent e) { b.setBackground(Color.WHITE); b.repaint(); }
+        });
+        
+        // AQUI ESTÁ A LIGAÇÃO: Manda o nível (txtTopo) para a próxima tela
+        b.addActionListener(e -> {
+            this.dispose();
+            new CriarPerguntas(txtTopo).setVisible(true); // txtTopo é "Fácil", "Médio" ou "Difícil"
         });
 
         return b;
     }
 
     private JButton criarBotaoControle(String texto, int x, int y) {
-        Color corInvisivel = new Color(178, 0, 0); 
+        Color corInvisivel = new Color(0, 0, 0, 0); 
         Color corHover = texto.equals("X") ? new Color(232, 17, 35) : new Color(100, 100, 100);
 
         JButton b = new JButton(texto) {
@@ -177,7 +186,8 @@ public class MenuAluno extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(x, 5, 60, 60); 
-            b.addActionListener(e -> { this.dispose(); new Login().setVisible(true); });
+            // Corrigido para voltar ao Menu do Professor
+            b.addActionListener(e -> { this.dispose(); new MenuProf().setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
@@ -212,16 +222,18 @@ public class MenuAluno extends JFrame {
             robotoBold32 = baseFont.deriveFont(Font.BOLD, 32f);
             robotoBold24 = baseFont.deriveFont(Font.BOLD, 24f);
             robotoBold36 = baseFont.deriveFont(Font.BOLD, 36f);
-            robotoBold21 = baseFont.deriveFont(Font.BOLD, 21f); 
+            robotoBold21 = baseFont.deriveFont(Font.BOLD, 21f);
+            robotoBold18 = baseFont.deriveFont(Font.BOLD, 18f); 
         } catch (Exception e) {
             robotoBold32 = new Font("Arial", Font.BOLD, 32);
             robotoBold24 = new Font("Arial", Font.BOLD, 24);
             robotoBold36 = new Font("Arial", Font.BOLD, 36);
             robotoBold21 = new Font("Arial", Font.BOLD, 21);
+            robotoBold18 = new Font("Arial", Font.BOLD, 18);
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MenuAluno());
+        SwingUtilities.invokeLater(() -> new CriarSelecaoNivel());
     }
 }

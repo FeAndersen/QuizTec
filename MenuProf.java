@@ -3,11 +3,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 
-public class MenuAluno extends JFrame {
+public class MenuProf extends JFrame {
 
-    private Font robotoBold32, robotoBold24, robotoBold36, robotoBold21;
+    private Font robotoBold32, robotoBold24, robotoBold36;
 
-    public MenuAluno() {
+    public MenuProf() {
         carregarFontes();
 
         setUndecorated(true);
@@ -36,7 +36,7 @@ public class MenuAluno extends JFrame {
 
         header.add(criarBotaoControle("X", larguraTela - 50, 0));
         header.add(criarBotaoControle("-", larguraTela - 100, 0));
-        header.add(criarBotaoControle("↰", 40, 5));
+        header.add(criarBotaoControle("↰", 0, 0)); 
 
         JLabel txtQuizTec = new JLabel("QuizTec");
         txtQuizTec.setForeground(Color.WHITE);
@@ -44,7 +44,7 @@ public class MenuAluno extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, Aluno!", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, professor", SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -68,7 +68,7 @@ public class MenuAluno extends JFrame {
         cardPrincipal.setOpaque(false);
         cardPrincipal.setBounds(xCard, yCard, larguraCard, alturaCard);
 
-        JLabel lblTituloCard = new JLabel("O que vamos praticar hoje?", SwingConstants.CENTER);
+        JLabel lblTituloCard = new JLabel("O que vamos fazer hoje professor?", SwingConstants.CENTER);
         lblTituloCard.setForeground(Color.WHITE);
         lblTituloCard.setFont(robotoBold32);
         lblTituloCard.setBounds(0, 60, larguraCard, 50);
@@ -79,31 +79,20 @@ public class MenuAluno extends JFrame {
         int espaco = 50; 
         int larguraTotalBotoes = (largBotao * 3) + (espaco * 2);
         int startX = (larguraCard - larguraTotalBotoes) / 2;
-        int startY = 180;
+        int startY = 200;
 
-        // Botoes agora usam as imagens PNG da pasta images/
-        cardPrincipal.add(criarBotaoCard("Iniciar Prática", "", "images/science.png", startX, startY, largBotao, altBotao, 1));
-        cardPrincipal.add(criarBotaoCard("Meu", "desempenho", "images/bar_chart.png", startX + largBotao + espaco, startY, largBotao, altBotao, 2));
-        cardPrincipal.add(criarBotaoCard("Sair", "", "images/logout.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao, 3));
+        // Botoes agora usam as imagens PNG enviadas
+        cardPrincipal.add(criarBotaoCard("Criar novo", "jogo", "images/add.png", startX, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoCard("Editar os seus", "jogos", "images/edit.png", startX + largBotao + espaco, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoCard("Gerenciar", "Perfis", "images/person_add_disabled.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao));
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);
 
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-                setExtendedState(JFrame.MAXIMIZED_BOTH);
-                repaint();
-                revalidate();
-            }
-        });
-
         setVisible(true);
     }
 
-    private JButton criarBotaoCard(String linha1, String linha2, String caminhoIcone, int x, int y, int w, int h, int idAcao) {
-        Color corFundo = Color.WHITE;
-        Color corFundoHover = new Color(240, 240, 240);
+    private JButton criarBotaoCard(String linha1, String linha2, String caminhoIcone, int x, int y, int w, int h) {
         Color corAzulEscuro = new Color(30, 55, 90);
 
         JButton b = new JButton() {
@@ -115,7 +104,7 @@ public class MenuAluno extends JFrame {
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
                 
-                // Desenhar a imagem PNG
+                // Desenhar o Ícone PNG
                 try {
                     ImageIcon icon = new ImageIcon(caminhoIcone);
                     Image img = icon.getImage();
@@ -130,6 +119,7 @@ public class MenuAluno extends JFrame {
                 g2.setColor(corAzulEscuro);
                 g2.setFont(robotoBold36);
                 FontMetrics fm = g2.getFontMetrics();
+                
                 if (linha2.isEmpty()) {
                     g2.drawString(linha1, (getWidth() - fm.stringWidth(linha1)) / 2, getHeight() - 60);
                 } else {
@@ -141,28 +131,23 @@ public class MenuAluno extends JFrame {
         };
 
         b.setBounds(x, y, w, h);
-        b.setBackground(corFundo);
+        b.setBackground(Color.WHITE);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setOpaque(false);
         b.setContentAreaFilled(false);
         b.setFocusPainted(false);
         b.setBorderPainted(false);
 
-        b.addActionListener(e -> {
-            if (idAcao == 1) { this.dispose(); new SelecaoNivel().setVisible(true); }
-            else if (idAcao == 3) { this.dispose(); new Login().setVisible(true); }
-        });
-
         b.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) { b.setBackground(corFundoHover); b.repaint(); }
-            @Override public void mouseExited(MouseEvent e) { b.setBackground(corFundo); b.repaint(); }
+            @Override public void mouseEntered(MouseEvent e) { b.setBackground(new Color(240, 240, 240)); b.repaint(); }
+            @Override public void mouseExited(MouseEvent e) { b.setBackground(Color.WHITE); b.repaint(); }
         });
 
         return b;
     }
 
     private JButton criarBotaoControle(String texto, int x, int y) {
-        Color corInvisivel = new Color(178, 0, 0); 
+        Color corInvisivel = new Color(0, 0, 0, 0); 
         Color corHover = texto.equals("X") ? new Color(232, 17, 35) : new Color(100, 100, 100);
 
         JButton b = new JButton(texto) {
@@ -176,11 +161,13 @@ public class MenuAluno extends JFrame {
 
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(x, 5, 60, 60); 
+            b.setBounds(x, 0, 60, 60); 
             b.addActionListener(e -> { this.dispose(); new Login().setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
+            if (texto.equals("X")) b.addActionListener(e -> System.exit(0));
+            else if (texto.equals("-")) b.addActionListener(e -> setState(Frame.ICONIFIED));
         }
 
         b.setMargin(new Insets(0, 0, 0, 0)); 
@@ -188,12 +175,9 @@ public class MenuAluno extends JFrame {
         b.setForeground(Color.WHITE);
         b.setOpaque(false);
         b.setContentAreaFilled(false);
-        b.setFocusPainted(false);
         b.setBorderPainted(false);
+        b.setFocusPainted(false);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        if (texto.equals("X")) b.addActionListener(e -> System.exit(0));
-        else if (texto.equals("-")) b.addActionListener(e -> setState(Frame.ICONIFIED));
 
         b.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) { b.setBackground(corHover); b.repaint(); }
@@ -212,16 +196,14 @@ public class MenuAluno extends JFrame {
             robotoBold32 = baseFont.deriveFont(Font.BOLD, 32f);
             robotoBold24 = baseFont.deriveFont(Font.BOLD, 24f);
             robotoBold36 = baseFont.deriveFont(Font.BOLD, 36f);
-            robotoBold21 = baseFont.deriveFont(Font.BOLD, 21f); 
         } catch (Exception e) {
             robotoBold32 = new Font("Arial", Font.BOLD, 32);
             robotoBold24 = new Font("Arial", Font.BOLD, 24);
             robotoBold36 = new Font("Arial", Font.BOLD, 36);
-            robotoBold21 = new Font("Arial", Font.BOLD, 21);
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MenuAluno());
+        SwingUtilities.invokeLater(() -> new MenuProf());
     }
 }
