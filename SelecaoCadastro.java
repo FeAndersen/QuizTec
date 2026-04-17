@@ -84,7 +84,7 @@ public class SelecaoCadastro extends JFrame {
 
         blocoCentral.add(criarBotaoOpcao("Professor", "images/professor_bom.png", startX, startY, largOpcao, altOpcao));
         blocoCentral.add(criarBotaoOpcao("Aluno", "images/aluno.png", startX + largOpcao + espaco, startY, largOpcao, altOpcao));
-
+        
         painelFundo.add(blocoCentral);
 
         // 3. Botões de Controle e Voltar
@@ -162,10 +162,13 @@ public class SelecaoCadastro extends JFrame {
             @Override public void mouseExited(MouseEvent e) { b.setBackground(corAzul); b.repaint(); }
         });
 
-        // Mantém a exata lógica de redirecionamento que você tinha antes
         b.addActionListener(e -> {
             this.dispose();
-            new Cadastro().setVisible(true);
+            if (tipo.equals("Professor")) {
+                new CadastroProf().setVisible(true);
+            } else {
+                new CadastroAluno().setVisible(true);
+            }
         });
 
         return b;
