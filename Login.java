@@ -26,7 +26,7 @@ public class Login extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images/fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -63,8 +63,8 @@ public class Login extends JFrame {
         blocoCentral.setBounds(xCentro, yCentro, larguraBloco, alturaBloco);
 
         int centroY = alturaBloco / 2;
-        adicionarLogo(blocoCentral, "images/Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
-        adicionarLogo(blocoCentral, "images/Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
+        adicionarLogo(blocoCentral, "QuizTec\\images\\Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
+        adicionarLogo(blocoCentral, "QuizTec\\images\\Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
 
         int fieldW = (int) (larguraBloco * 0.32);
         int fieldH = 55;
@@ -87,6 +87,7 @@ public class Login extends JFrame {
                 g2.setColor(new Color(30, 55, 90));
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                 super.paintComponent(g);
+                
             }
         };
         btnEntrar.setBounds(fieldX, centroY + 110, fieldW, 70);
@@ -104,6 +105,14 @@ public class Login extends JFrame {
         lblLink.setBounds(fieldX, centroY + 190, fieldW, 30);
         lblLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
         blocoCentral.add(lblLink);
+        lblLink.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            dispose(); // Fecha o Login
+            new SelecaoCadastro().setVisible(true); // Abre a tela de escolha de Cadastro
+    }
+});
+        
 
         painelFundo.add(blocoCentral);
 

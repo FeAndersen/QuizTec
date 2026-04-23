@@ -22,13 +22,14 @@ public class MenuProf extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images/fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
         painelFundo.setLayout(null);
         setContentPane(painelFundo);
 
+        // Header (Barra Vermelha Superior)
         JPanel header = new JPanel();
         header.setBackground(new Color(178, 0, 0));
         header.setBounds(0, 0, larguraTela, 80);
@@ -36,6 +37,8 @@ public class MenuProf extends JFrame {
 
         header.add(criarBotaoControle("X", larguraTela - 50, 0));
         header.add(criarBotaoControle("-", larguraTela - 100, 0));
+        
+        // O botão de voltar no MenuProf normalmente leva de volta pro Login
         header.add(criarBotaoControle("↰", 0, 0)); 
 
         JLabel txtQuizTec = new JLabel("QuizTec");
@@ -50,6 +53,7 @@ public class MenuProf extends JFrame {
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
         header.add(txtOla);
 
+        // Card Central Vermelho
         int larguraCard = (int) (larguraTela * 0.85);
         int alturaCard = (int) (alturaTela * 0.75);
         int xCard = (larguraTela - larguraCard) / 2;
@@ -74,6 +78,7 @@ public class MenuProf extends JFrame {
         lblTituloCard.setBounds(0, 60, larguraCard, 50);
         cardPrincipal.add(lblTituloCard);
 
+        // Botões Brancos Principais
         int largBotao = 280; 
         int altBotao = 320; 
         int espaco = 50; 
@@ -81,10 +86,10 @@ public class MenuProf extends JFrame {
         int startX = (larguraCard - larguraTotalBotoes) / 2;
         int startY = 200;
 
-        // Botoes agora usam as imagens PNG enviadas
-        cardPrincipal.add(criarBotaoCard("Criar novo", "jogo", "images/add.png", startX, startY, largBotao, altBotao));
-        cardPrincipal.add(criarBotaoCard("Editar os seus", "jogos", "images/edit.png", startX + largBotao + espaco, startY, largBotao, altBotao));
-        cardPrincipal.add(criarBotaoCard("Gerenciar", "Perfis", "images/person_add_disabled.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao));
+        // Repare que adicionei um número (1, 2, 3) no final de cada chamada para identificar a ação!
+        cardPrincipal.add(criarBotaoCard("Criar novo", "jogo", "QuizTec\\images\\add.png", startX, startY, largBotao, altBotao, 1));
+        cardPrincipal.add(criarBotaoCard("Editar os seus", "jogos", "QuizTec\\images\\edit.png", startX + largBotao + espaco, startY, largBotao, altBotao, 2));
+        cardPrincipal.add(criarBotaoCard("Gerenciar", "Perfis", "QuizTec\\images\\person_add_disabled.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao, 3));
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);
@@ -92,7 +97,8 @@ public class MenuProf extends JFrame {
         setVisible(true);
     }
 
-    private JButton criarBotaoCard(String linha1, String linha2, String caminhoIcone, int x, int y, int w, int h) {
+    // Método atualizado: Adicionei "int idAcao" nos parâmetros
+    private JButton criarBotaoCard(String linha1, String linha2, String caminhoIcone, int x, int y, int w, int h, int idAcao) {
         Color corAzulEscuro = new Color(30, 55, 90);
 
         JButton b = new JButton() {
@@ -104,7 +110,6 @@ public class MenuProf extends JFrame {
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
                 
-                // Desenhar o Ícone PNG
                 try {
                     ImageIcon icon = new ImageIcon(caminhoIcone);
                     Image img = icon.getImage();
@@ -138,9 +143,27 @@ public class MenuProf extends JFrame {
         b.setFocusPainted(false);
         b.setBorderPainted(false);
 
+        // Efeito Hover
         b.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) { b.setBackground(new Color(240, 240, 240)); b.repaint(); }
             @Override public void mouseExited(MouseEvent e) { b.setBackground(Color.WHITE); b.repaint(); }
+        });
+
+        // ==========================================
+        // AQUI ESTÁ A LÓGICA DE REDIRECIONAMENTO
+        // ==========================================
+        b.addActionListener(e -> {
+            this.dispose(); // Fecha o Menu do Professor
+            
+            if (idAcao == 1) {
+                new CriarSelecaoNivel().setVisible(true); // Vai criar um novo jogo
+            } 
+            else if (idAcao == 2) {
+                new SeusJogosCriados().setVisible(true);  // Vai ver o histórico de jogos
+            } 
+            else if (idAcao == 3) {
+                new SeusAlunos().setVisible(true);        // Vai para o gerenciamento de alunos
+            }
         });
 
         return b;
@@ -162,6 +185,7 @@ public class MenuProf extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(x, 0, 60, 60); 
+            // O botão de voltar do MenuProf geralmente desloga e volta pro Login
             b.addActionListener(e -> { this.dispose(); new Login().setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
@@ -177,6 +201,8 @@ public class MenuProf extends JFrame {
         b.setContentAreaFilled(false);
         b.setBorderPainted(false);
         b.setFocusPainted(false);
+        b.setFocusable(false); // Mata a bordinha do Windows
+        b.setBorder(null);     // Mata a bordinha do Windows
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         b.addMouseListener(new MouseAdapter() {

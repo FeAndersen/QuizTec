@@ -7,7 +7,7 @@ import java.util.List;
 
 public class SeusJogosCriados extends JFrame {
 
-    private Font robotoBold36, robotoBold24, robotoBold18, robotoBold14;
+    private Font robotoBold36, robotoBold24, robotoBold14;
 
     // ==========================================
     // MOCK DATABASE (Banco de Dados Simulado)
@@ -44,7 +44,7 @@ public class SeusJogosCriados extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images/fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -174,9 +174,9 @@ public class SeusJogosCriados extends JFrame {
                 // 1. ÍCONE DE DIFICULDADE (Sinalizado em AZUL)
                 // Lógica dinâmica para ler a String e puxar o PNG certo
                 try {
-                    String imgPath = "images/labs.png"; // Padrão Fácil
-                    if (jogo.nivel.contains("Médio")) imgPath = "images/biotech.png";
-                    else if (jogo.nivel.contains("Difícil")) imgPath = "images/fluid_med.png";
+                    String imgPath = "QuizTec\\images\\labs.png"; // Padrão Fácil
+                    if (jogo.nivel.contains("Médio")) imgPath = "QuizTec\\images\\biotech.png";
+                    else if (jogo.nivel.contains("Difícil")) imgPath = "QuizTec\\images\\fluid_med.png";
                     
                     ImageIcon icon = new ImageIcon(imgPath);
                     Image img = icon.getImage();
@@ -208,9 +208,9 @@ public class SeusJogosCriados extends JFrame {
         int btnH = 70;
         int startXBtns = w - (btnW * 3) - 20;
 
-        p.add(criarBotaoAcao("Renomear", "images/rename.png", startXBtns, 10, btnW, btnH));
-        p.add(criarBotaoAcao("Editar", "images/edit.png", startXBtns + btnW, 10, btnW, btnH));
-        p.add(criarBotaoAcao("Apagar", "images/delete.png", startXBtns + (btnW * 2), 10, btnW, btnH));
+        p.add(criarBotaoAcao("Renomear", "QuizTec\\images\\rename.png", startXBtns, 10, btnW, btnH));
+        p.add(criarBotaoAcao("Editar", "QuizTec\\images\\edit.png", startXBtns + btnW, 10, btnW, btnH));
+        p.add(criarBotaoAcao("Apagar", "QuizTec\\images\\delete.png", startXBtns + (btnW * 2), 10, btnW, btnH));
 
         return p;
     }
@@ -293,7 +293,7 @@ public class SeusJogosCriados extends JFrame {
 
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(x, 0, 80, 80); 
+            b.setBounds(x, 0, 60, 60); 
             // Volta para o Menu Principal do Professor
             b.addActionListener(e -> { this.dispose(); new MenuProf().setVisible(true); });
         } else {
@@ -309,6 +309,9 @@ public class SeusJogosCriados extends JFrame {
         b.setOpaque(false);
         b.setContentAreaFilled(false);
         b.setBorderPainted(false);
+        b.setFocusPainted(false); // Desliga o desenho do foco ao clicar
+        b.setFocusable(false);    // Impede que o botão receba foco pelo teclado
+        b.setBorder(null);        // Garante que não sobrou nenhuma borda do Windows
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         b.addMouseListener(new MouseAdapter() {
@@ -327,12 +330,10 @@ public class SeusJogosCriados extends JFrame {
             ge.registerFont(baseFont);
             robotoBold36 = baseFont.deriveFont(Font.BOLD, 36f);
             robotoBold24 = baseFont.deriveFont(Font.BOLD, 24f);
-            robotoBold18 = baseFont.deriveFont(Font.BOLD, 18f);
             robotoBold14 = baseFont.deriveFont(Font.BOLD, 14f);
         } catch (Exception e) {
             robotoBold36 = new Font("Arial", Font.BOLD, 36);
             robotoBold24 = new Font("Arial", Font.BOLD, 24);
-            robotoBold18 = new Font("Arial", Font.BOLD, 18);
             robotoBold14 = new Font("Arial", Font.BOLD, 14);
         }
     }

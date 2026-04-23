@@ -51,7 +51,7 @@ public class CriarPerguntas extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images/fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -80,9 +80,9 @@ public class CriarPerguntas extends JFrame {
         header.add(txtOla);
 
         int larguraCard = (int) (larguraTela * 0.85);
-        int alturaCard = (int) (alturaTela * 0.85);
+        int alturaCard = (int) (alturaTela * 0.75);
         int xCard = (larguraTela - larguraCard) / 2;
-        int yCard = 100;
+        int yCard = 150;
 
         JPanel cardPrincipal = new JPanel() {
             @Override
@@ -103,7 +103,7 @@ public class CriarPerguntas extends JFrame {
         txtContador.setBounds(40, 30, 100, 40);
         cardPrincipal.add(txtContador);
 
-        JButton btnConcluir = criarBotaoImagem("images/concluir.png", larguraCard - 100, 20, 60, 60);
+        JButton btnConcluir = criarBotaoImagem("QuizTec\\images\\concluir.png", larguraCard - 100, 20, 60, 60);
         btnConcluir.addActionListener(e -> {
             salvarEstadoAtual();
             abrirPopupSalvarJogo();
@@ -272,6 +272,10 @@ public class CriarPerguntas extends JFrame {
         btnFecharPopup.setBounds(wPopup - 60, 20, 40, 40);
         btnFecharPopup.setContentAreaFilled(false);
         btnFecharPopup.setBorderPainted(false);
+        // --- AS DUAS LINHAS FAZEM O X NÃO VIRAR "..." ---
+        btnFecharPopup.setMargin(new Insets(0, 0, 0, 0)); 
+        btnFecharPopup.setBorder(null);
+        // --- FIM DAS DUAS LINHAS  ---
         btnFecharPopup.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnFecharPopup.addActionListener(e -> glassPane.setVisible(false));
         popupCard.add(btnFecharPopup);
@@ -482,7 +486,7 @@ public class CriarPerguntas extends JFrame {
 
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(x, 0, 80, 80); 
+            b.setBounds(x, 0, 60, 60); 
             b.addActionListener(e -> { this.dispose(); new CriarSelecaoNivel().setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
@@ -498,6 +502,11 @@ public class CriarPerguntas extends JFrame {
         b.setContentAreaFilled(false);
         b.setBorderPainted(false);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // --- ADICIONE ESTAS 3 LINHAS ---
+        b.setFocusPainted(false); // Desliga o desenho do foco ao clicar
+        b.setFocusable(false);    // Impede que o botão receba foco pelo teclado
+        b.setBorder(null);        // Garante que não sobrou nenhuma borda do Windows
 
         b.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) { b.setBackground(corHover); b.repaint(); }

@@ -5,7 +5,7 @@ import java.io.File;
 
 public class MenuAluno extends JFrame {
 
-    private Font robotoBold32, robotoBold24, robotoBold36, robotoBold21;
+    private Font robotoBold32, robotoBold24, robotoBold36;
 
     public MenuAluno() {
         carregarFontes();
@@ -22,7 +22,7 @@ public class MenuAluno extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images/fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -82,9 +82,9 @@ public class MenuAluno extends JFrame {
         int startY = 180;
 
         // Botoes agora usam as imagens PNG da pasta images/
-        cardPrincipal.add(criarBotaoCard("Iniciar Prática", "", "images/science.png", startX, startY, largBotao, altBotao, 1));
-        cardPrincipal.add(criarBotaoCard("Meu", "desempenho", "images/bar_chart.png", startX + largBotao + espaco, startY, largBotao, altBotao, 2));
-        cardPrincipal.add(criarBotaoCard("Sair", "", "images/logout.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao, 3));
+        cardPrincipal.add(criarBotaoCard("Iniciar Prática", "", "QuizTec\\images\\science.png", startX, startY, largBotao, altBotao, 1));
+        cardPrincipal.add(criarBotaoCard("Meu", "desempenho", "QuizTec\\images\\bar_chart.png", startX + largBotao + espaco, startY, largBotao, altBotao, 2));
+        cardPrincipal.add(criarBotaoCard("Sair", "", "QuizTec\\images\\logout.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao, 3));
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);
@@ -212,12 +212,10 @@ public class MenuAluno extends JFrame {
             robotoBold32 = baseFont.deriveFont(Font.BOLD, 32f);
             robotoBold24 = baseFont.deriveFont(Font.BOLD, 24f);
             robotoBold36 = baseFont.deriveFont(Font.BOLD, 36f);
-            robotoBold21 = baseFont.deriveFont(Font.BOLD, 21f); 
         } catch (Exception e) {
             robotoBold32 = new Font("Arial", Font.BOLD, 32);
             robotoBold24 = new Font("Arial", Font.BOLD, 24);
             robotoBold36 = new Font("Arial", Font.BOLD, 36);
-            robotoBold21 = new Font("Arial", Font.BOLD, 21);
         }
     }
 

@@ -5,7 +5,7 @@ import java.io.File;
 
 public class SelecaoNivel extends JFrame {
 
-    private Font robotoBold32, robotoBold24, robotoBold36, robotoBold21, robotoBold18;
+    private Font robotoBold32, robotoBold24, robotoBold36, robotoBold18;
 
     public SelecaoNivel() {
         carregarFontes();
@@ -22,7 +22,7 @@ public class SelecaoNivel extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images/fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -81,9 +81,9 @@ public class SelecaoNivel extends JFrame {
         int startX = (larguraCard - larguraTotalBotoes) / 2;
         int startY = 200;
 
-        cardPrincipal.add(criarBotaoNivel("Fácil", "Identificação", "Para aprender os nomes", "images/labs.png", startX, startY, largBotao, altBotao));
-        cardPrincipal.add(criarBotaoNivel("Médio", "Funções", "Para que serve;cada material?", "images/biotech.png", startX + largBotao + espaco, startY, largBotao, altBotao));
-        cardPrincipal.add(criarBotaoNivel("Difícil", "Sistemas", "Montagem de experimentos", "images/fluid_med.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoNivel("Fácil", "Identificação", "Para aprender os nomes", "QuizTec\\images\\labs.png", startX, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoNivel("Médio", "Funções", "Para que serve;cada material?", "QuizTec\\images\\biotech.png", startX + largBotao + espaco, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoNivel("Difícil", "Sistemas", "Montagem de experimentos", "QuizTec\\images\\fluid_med.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao));
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);
@@ -178,7 +178,7 @@ public class SelecaoNivel extends JFrame {
 
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(x, 5, 60, 60); 
+            b.setBounds(0, 0, 60, 60); 
             b.addActionListener(e -> { this.dispose(); new MenuAluno().setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
@@ -214,13 +214,11 @@ public class SelecaoNivel extends JFrame {
             robotoBold32 = baseFont.deriveFont(Font.BOLD, 32f);
             robotoBold24 = baseFont.deriveFont(Font.BOLD, 24f);
             robotoBold36 = baseFont.deriveFont(Font.BOLD, 36f);
-            robotoBold21 = baseFont.deriveFont(Font.BOLD, 21f);
             robotoBold18 = baseFont.deriveFont(Font.BOLD, 18f); 
         } catch (Exception e) {
             robotoBold32 = new Font("Arial", Font.BOLD, 32);
             robotoBold24 = new Font("Arial", Font.BOLD, 24);
             robotoBold36 = new Font("Arial", Font.BOLD, 36);
-            robotoBold21 = new Font("Arial", Font.BOLD, 21);
             robotoBold18 = new Font("Arial", Font.BOLD, 18);
         }
     }

@@ -37,7 +37,7 @@ public class SeusAlunos extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images/fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -113,7 +113,7 @@ public class SeusAlunos extends JFrame {
                 g2.drawOval(2, 2, getWidth() - 4, getHeight() - 4);
                 
                 try {
-                    ImageIcon icon = new ImageIcon("images/person_add.png");
+                    ImageIcon icon = new ImageIcon("QuizTec\\images\\person_add.png");
                     Image img = icon.getImage();
                     int iconDim = 36; 
                     int cx = (getWidth() - iconDim) / 2;
@@ -248,6 +248,10 @@ public class SeusAlunos extends JFrame {
         btnFecharPopup.setBounds(wPopup - 60, 20, 40, 40);
         btnFecharPopup.setContentAreaFilled(false);
         btnFecharPopup.setBorderPainted(false);
+        // --- AS DUAS LINHAS GARANTEM O X NÃO VIRAR "..." ---
+        btnFecharPopup.setMargin(new Insets(0, 0, 0, 0)); 
+        btnFecharPopup.setBorder(null);
+        // --- FIM DAS DUAS LINHAS SALVADORAS ---
         btnFecharPopup.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnFecharPopup.addActionListener(e -> glassPane.setVisible(false));
         popupCard.add(btnFecharPopup);
@@ -340,8 +344,8 @@ public class SeusAlunos extends JFrame {
         int btnH = h;
         int startXBtns = w - (btnW * 2) - 20;
 
-        p.add(criarBotaoAcao("Renomear", "images/rename.png", startXBtns, 0, btnW, btnH));
-        p.add(criarBotaoAcao("Remover", "images/person_remove.png", startXBtns + btnW, 0, btnW, btnH));
+        p.add(criarBotaoAcao("Renomear", "QuizTec\\images\\rename.png", startXBtns, 0, btnW, btnH));
+        p.add(criarBotaoAcao("Remover", "QuizTec\\images\\person_remove.png", startXBtns + btnW, 0, btnW, btnH));
 
         return p;
     }
