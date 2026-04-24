@@ -36,7 +36,7 @@ public class MenuAluno extends JFrame {
 
         header.add(criarBotaoControle("X", larguraTela - 50, 0));
         header.add(criarBotaoControle("-", larguraTela - 100, 0));
-        header.add(criarBotaoControle("↰", 40, 5));
+        header.add(criarBotaoControle("↰", 0, 0));
 
         JLabel txtQuizTec = new JLabel("QuizTec");
         txtQuizTec.setForeground(Color.WHITE);
@@ -176,7 +176,7 @@ public class MenuAluno extends JFrame {
 
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(x, 5, 60, 60); 
+            b.setBounds(x, 0, 60, 60); 
             b.addActionListener(e -> { this.dispose(); new Login().setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
