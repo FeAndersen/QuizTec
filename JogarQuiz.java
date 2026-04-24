@@ -80,10 +80,10 @@ public class JogarQuiz extends JFrame {
         // Ícone de Ajuda (Help)
         JButton btnAjuda = new JButton();
         try {
-            Image img = new ImageIcon("QuizTec\\images\\help.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+            Image img = new ImageIcon("QuizTec\\images\\help.png").getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
             btnAjuda.setIcon(new ImageIcon(img));
         } catch (Exception e) {}
-        btnAjuda.setBounds(larguraCard - 90, 30, 50, 50);
+        btnAjuda.setBounds(larguraCard - 90, 30, 60, 60);
         btnAjuda.setContentAreaFilled(false);
         btnAjuda.setBorderPainted(false);
         btnAjuda.setFocusPainted(false);

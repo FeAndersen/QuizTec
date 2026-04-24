@@ -5,7 +5,7 @@ import java.io.File;
 
 public class ResultadoQuiz extends JFrame {
 
-    private Font robotoBold36, robotoBold24, robotoBold20;
+    private Font robotoBold36, robotoBold24;
 
     public ResultadoQuiz(int acertos, int total) {
         carregarFontes();
@@ -231,11 +231,9 @@ public class ResultadoQuiz extends JFrame {
             GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(baseFont);
             robotoBold36 = baseFont.deriveFont(Font.BOLD, 36f);
             robotoBold24 = baseFont.deriveFont(Font.BOLD, 24f);
-            robotoBold20 = baseFont.deriveFont(Font.BOLD, 20f);
         } catch (Exception e) {
             robotoBold36 = new Font("Arial", Font.BOLD, 36);
             robotoBold24 = new Font("Arial", Font.BOLD, 24);
-            robotoBold20 = new Font("Arial", Font.BOLD, 20);
         }
     }
 
