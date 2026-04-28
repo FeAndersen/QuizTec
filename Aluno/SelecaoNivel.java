@@ -1,13 +1,15 @@
+package Aluno;
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 
-public class CriarSelecaoNivel extends JFrame {
+public class SelecaoNivel extends JFrame {
 
     private Font robotoBold32, robotoBold24, robotoBold36, robotoBold18;
 
-    public CriarSelecaoNivel() {
+    public SelecaoNivel() {
         carregarFontes();
 
         setUndecorated(true);
@@ -44,8 +46,7 @@ public class CriarSelecaoNivel extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        // Atualizado para o Professor
-        JLabel txtOla = new JLabel("Olá, professor", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, Aluno!", SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -69,7 +70,7 @@ public class CriarSelecaoNivel extends JFrame {
         cardPrincipal.setOpaque(false);
         cardPrincipal.setBounds(xCard, yCard, larguraCard, alturaCard);
 
-        JLabel lblTituloCard = new JLabel("Qual nível de jogo você deseja criar?", SwingConstants.CENTER);
+        JLabel lblTituloCard = new JLabel("Qual nível deseja praticar?", SwingConstants.CENTER);
         lblTituloCard.setForeground(Color.WHITE);
         lblTituloCard.setFont(robotoBold32);
         lblTituloCard.setBounds(0, 60, larguraCard, 50);
@@ -112,12 +113,13 @@ public class CriarSelecaoNivel extends JFrame {
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
                 
+                // Desenhar a imagem PNG
                 try {
                     ImageIcon icon = new ImageIcon(caminhoIcone);
                     Image img = icon.getImage();
                     int iconDim = 100;
                     int iconX = (getWidth() - iconDim) / 2;
-                    int iconY = 70;
+                    int iconY = 70; // Mais para baixo por causa do texto Fácil/Médio/Difícil
                     g2.drawImage(img, iconX, iconY, iconDim, iconDim, null);
                 } catch (Exception e) {
                     System.out.println("Erro ao carregar: " + caminhoIcone);
@@ -160,13 +162,6 @@ public class CriarSelecaoNivel extends JFrame {
             @Override public void mouseEntered(MouseEvent e) { b.setBackground(new Color(240, 240, 240)); b.repaint(); }
             @Override public void mouseExited(MouseEvent e) { b.setBackground(Color.WHITE); b.repaint(); }
         });
-        
-        // AQUI ESTÁ A LIGAÇÃO: Manda o nível (txtTopo) para a próxima tela
-        b.addActionListener(e -> {
-            this.dispose();
-            new CriarPerguntas(txtTopo).setVisible(true); // txtTopo é "Fácil", "Médio" ou "Difícil"
-        });
-
         return b;
     }
 
@@ -186,8 +181,7 @@ public class CriarSelecaoNivel extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(0, 0, 60, 60); 
-            // Corrigido para voltar ao Menu do Professor
-            b.addActionListener(e -> { this.dispose(); new MenuProf().setVisible(true); });
+            b.addActionListener(e -> { this.dispose(); new MenuAluno().setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
@@ -232,6 +226,6 @@ public class CriarSelecaoNivel extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new CriarSelecaoNivel());
+        SwingUtilities.invokeLater(() -> new SelecaoNivel());
     }
 }

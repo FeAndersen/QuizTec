@@ -1,4 +1,6 @@
+package Professor;
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -154,7 +156,7 @@ public class SeusJogosCriados extends JFrame {
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);
-
+        
         setVisible(true);
     }
 

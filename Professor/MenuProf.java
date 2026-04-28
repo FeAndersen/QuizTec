@@ -1,13 +1,18 @@
+package Professor;
 import javax.swing.*;
+
+import Aluno.SeusAlunos;
+import Cadastro.Login;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 
-public class SelecaoNivel extends JFrame {
+public class MenuProf extends JFrame {
 
-    private Font robotoBold32, robotoBold24, robotoBold36, robotoBold18;
+    private Font robotoBold32, robotoBold24, robotoBold36;
 
-    public SelecaoNivel() {
+    public MenuProf() {
         carregarFontes();
 
         setUndecorated(true);
@@ -29,6 +34,7 @@ public class SelecaoNivel extends JFrame {
         painelFundo.setLayout(null);
         setContentPane(painelFundo);
 
+        // Header (Barra Vermelha Superior)
         JPanel header = new JPanel();
         header.setBackground(new Color(178, 0, 0));
         header.setBounds(0, 0, larguraTela, 80);
@@ -36,7 +42,9 @@ public class SelecaoNivel extends JFrame {
 
         header.add(criarBotaoControle("X", larguraTela - 50, 0));
         header.add(criarBotaoControle("-", larguraTela - 100, 0));
-        header.add(criarBotaoControle("↰", 40, 0));
+        
+        // O botão de voltar no MenuProf normalmente leva de volta pro Login
+        header.add(criarBotaoControle("↰", 0, 0)); 
 
         JLabel txtQuizTec = new JLabel("QuizTec");
         txtQuizTec.setForeground(Color.WHITE);
@@ -44,12 +52,13 @@ public class SelecaoNivel extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, Aluno!", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, professor", SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
         header.add(txtOla);
 
+        // Card Central Vermelho
         int larguraCard = (int) (larguraTela * 0.85);
         int alturaCard = (int) (alturaTela * 0.75);
         int xCard = (larguraTela - larguraCard) / 2;
@@ -68,12 +77,13 @@ public class SelecaoNivel extends JFrame {
         cardPrincipal.setOpaque(false);
         cardPrincipal.setBounds(xCard, yCard, larguraCard, alturaCard);
 
-        JLabel lblTituloCard = new JLabel("Qual nível deseja praticar?", SwingConstants.CENTER);
+        JLabel lblTituloCard = new JLabel("O que vamos fazer hoje professor?", SwingConstants.CENTER);
         lblTituloCard.setForeground(Color.WHITE);
         lblTituloCard.setFont(robotoBold32);
         lblTituloCard.setBounds(0, 60, larguraCard, 50);
         cardPrincipal.add(lblTituloCard);
 
+        // Botões Brancos Principais
         int largBotao = 280; 
         int altBotao = 320; 
         int espaco = 50; 
@@ -81,27 +91,21 @@ public class SelecaoNivel extends JFrame {
         int startX = (larguraCard - larguraTotalBotoes) / 2;
         int startY = 200;
 
-        cardPrincipal.add(criarBotaoNivel("Fácil", "Identificação", "Para aprender os nomes", "QuizTec\\images\\labs.png", startX, startY, largBotao, altBotao));
-        cardPrincipal.add(criarBotaoNivel("Médio", "Funções", "Para que serve;cada material?", "QuizTec\\images\\biotech.png", startX + largBotao + espaco, startY, largBotao, altBotao));
-        cardPrincipal.add(criarBotaoNivel("Difícil", "Sistemas", "Montagem de experimentos", "QuizTec\\images\\fluid_med.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao));
+        // Repare que adicionei um número (1, 2, 3) no final de cada chamada para identificar a ação!
+        cardPrincipal.add(criarBotaoCard("Criar novo", "jogo", "QuizTec\\images\\add.png", startX, startY, largBotao, altBotao, 1));
+        cardPrincipal.add(criarBotaoCard("Editar os seus", "jogos", "QuizTec\\images\\edit.png", startX + largBotao + espaco, startY, largBotao, altBotao, 2));
+        cardPrincipal.add(criarBotaoCard("Gerenciar", "Perfis", "QuizTec\\images\\person_add_disabled.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao, 3));
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);
 
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-                setExtendedState(JFrame.MAXIMIZED_BOTH);
-                repaint();
-                revalidate();
-            }
-        });
-
         setVisible(true);
     }
 
-    private JButton criarBotaoNivel(String txtTopo, String txtMeio, String txtBase, String caminhoIcone, int x, int y, int w, int h) {
-        Color corAzulEscuro = new Color(30, 55, 90); 
+    // Método atualizado: Adicionei "int idAcao" nos parâmetros
+    private JButton criarBotaoCard(String linha1, String linha2, String caminhoIcone, int x, int y, int w, int h, int idAcao) {
+        Color corAzulEscuro = new Color(30, 55, 90);
+
         JButton b = new JButton() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -111,38 +115,26 @@ public class SelecaoNivel extends JFrame {
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
                 
-                // Desenhar a imagem PNG
                 try {
                     ImageIcon icon = new ImageIcon(caminhoIcone);
                     Image img = icon.getImage();
                     int iconDim = 100;
                     int iconX = (getWidth() - iconDim) / 2;
-                    int iconY = 70; // Mais para baixo por causa do texto Fácil/Médio/Difícil
+                    int iconY = 50; 
                     g2.drawImage(img, iconX, iconY, iconDim, iconDim, null);
                 } catch (Exception e) {
                     System.out.println("Erro ao carregar: " + caminhoIcone);
                 }
 
                 g2.setColor(corAzulEscuro);
-                FontMetrics fm;
-                
-                g2.setFont(robotoBold24);
-                fm = g2.getFontMetrics();
-                g2.drawString(txtTopo, (getWidth() - fm.stringWidth(txtTopo)) / 2, 45);
-
                 g2.setFont(robotoBold36);
-                fm = g2.getFontMetrics();
-                g2.drawString(txtMeio, (getWidth() - fm.stringWidth(txtMeio)) / 2, getHeight() - 80);
-
-                g2.setFont(robotoBold18); 
-                fm = g2.getFontMetrics();
+                FontMetrics fm = g2.getFontMetrics();
                 
-                if (txtBase.contains(";")) {
-                    String[] partes = txtBase.split(";");
-                    g2.drawString(partes[0], (getWidth() - fm.stringWidth(partes[0])) / 2, getHeight() - 45);
-                    g2.drawString(partes[1], (getWidth() - fm.stringWidth(partes[1])) / 2, getHeight() - 25);
+                if (linha2.isEmpty()) {
+                    g2.drawString(linha1, (getWidth() - fm.stringWidth(linha1)) / 2, getHeight() - 60);
                 } else {
-                    g2.drawString(txtBase, (getWidth() - fm.stringWidth(txtBase)) / 2, getHeight() - 35);
+                    g2.drawString(linha1, (getWidth() - fm.stringWidth(linha1)) / 2, getHeight() - 75);
+                    g2.drawString(linha2, (getWidth() - fm.stringWidth(linha2)) / 2, getHeight() - 35);
                 }
                 g2.dispose();
             }
@@ -150,16 +142,35 @@ public class SelecaoNivel extends JFrame {
 
         b.setBounds(x, y, w, h);
         b.setBackground(Color.WHITE);
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setOpaque(false);
         b.setContentAreaFilled(false);
         b.setFocusPainted(false);
         b.setBorderPainted(false);
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+        // Efeito Hover
         b.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) { b.setBackground(new Color(240, 240, 240)); b.repaint(); }
             @Override public void mouseExited(MouseEvent e) { b.setBackground(Color.WHITE); b.repaint(); }
         });
+
+        // ==========================================
+        // AQUI ESTÁ A LÓGICA DE REDIRECIONAMENTO
+        // ==========================================
+        b.addActionListener(e -> {
+            this.dispose(); // Fecha o Menu do Professor
+            
+            if (idAcao == 1) {
+                new CriarSelecaoNivel().setVisible(true); // Vai criar um novo jogo
+            } 
+            else if (idAcao == 2) {
+                new SeusJogosCriados().setVisible(true);  // Vai ver o histórico de jogos
+            } 
+            else if (idAcao == 3) {
+                new SeusAlunos().setVisible(true);        // Vai para o gerenciamento de alunos
+            }
+        });
+
         return b;
     }
 
@@ -178,11 +189,14 @@ public class SelecaoNivel extends JFrame {
 
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(0, 0, 60, 60); 
-            b.addActionListener(e -> { this.dispose(); new MenuAluno().setVisible(true); });
+            b.setBounds(x, 0, 60, 60); 
+            // O botão de voltar do MenuProf geralmente desloga e volta pro Login
+            b.addActionListener(e -> { this.dispose(); new Login().setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
+            if (texto.equals("X")) b.addActionListener(e -> System.exit(0));
+            else if (texto.equals("-")) b.addActionListener(e -> setState(Frame.ICONIFIED));
         }
 
         b.setMargin(new Insets(0, 0, 0, 0)); 
@@ -190,12 +204,11 @@ public class SelecaoNivel extends JFrame {
         b.setForeground(Color.WHITE);
         b.setOpaque(false);
         b.setContentAreaFilled(false);
-        b.setFocusPainted(false);
         b.setBorderPainted(false);
+        b.setFocusPainted(false);
+        b.setFocusable(false); // Mata a bordinha do Windows
+        b.setBorder(null);     // Mata a bordinha do Windows
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        if (texto.equals("X")) b.addActionListener(e -> System.exit(0));
-        else if (texto.equals("-")) b.addActionListener(e -> setState(Frame.ICONIFIED));
 
         b.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) { b.setBackground(corHover); b.repaint(); }
@@ -214,16 +227,14 @@ public class SelecaoNivel extends JFrame {
             robotoBold32 = baseFont.deriveFont(Font.BOLD, 32f);
             robotoBold24 = baseFont.deriveFont(Font.BOLD, 24f);
             robotoBold36 = baseFont.deriveFont(Font.BOLD, 36f);
-            robotoBold18 = baseFont.deriveFont(Font.BOLD, 18f); 
         } catch (Exception e) {
             robotoBold32 = new Font("Arial", Font.BOLD, 32);
             robotoBold24 = new Font("Arial", Font.BOLD, 24);
             robotoBold36 = new Font("Arial", Font.BOLD, 36);
-            robotoBold18 = new Font("Arial", Font.BOLD, 18);
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new SelecaoNivel());
+        SwingUtilities.invokeLater(() -> new MenuProf());
     }
 }
