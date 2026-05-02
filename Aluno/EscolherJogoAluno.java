@@ -1,6 +1,5 @@
 package Aluno;
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Path2D;
@@ -9,8 +8,10 @@ import java.io.File;
 public class EscolherJogoAluno extends JFrame {
 
     private Font robotoBold36, robotoBold24, robotoBold18, robotoBold14;
+    private String nomeAluno; // Armazena o nome do aluno logado
 
-    public EscolherJogoAluno() {
+    public EscolherJogoAluno(String nome) {
+        this.nomeAluno = nome; // Recebe o nome do menu
         carregarFontes();
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -45,7 +46,7 @@ public class EscolherJogoAluno extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, Aluno", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, " + nomeAluno, SwingConstants.RIGHT); // Agora exibe o nome real
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -90,7 +91,6 @@ public class EscolherJogoAluno extends JFrame {
         linha.setOpaque(false);
         cardPrincipal.add(linha);
 
-        // LISTA DE JOGOS
         int wLista = (int) (larguraCard * 0.85);
         int hLista = alturaCard - 180;
         int xLista = (larguraCard - wLista) / 2;
@@ -104,7 +104,6 @@ public class EscolherJogoAluno extends JFrame {
         int hJogo = 80;
         int espacoJogo = 15;
 
-        // Todos os ícones iguais para o nível fácil!
         String[] nomesJogos = {"Quiz de Vidrarias - 1º Ano A", "Quiz de Função - 1º Ano A", "Quiz de Função - 1º Ano A", "Quiz de Sistemas - 1º Ano A"};
         String[] icones = {
             "QuizTec\\images\\labs.png", 
@@ -204,7 +203,8 @@ public class EscolherJogoAluno extends JFrame {
 
         btnJogar.addActionListener(e -> {
             this.dispose();
-            new JogarQuiz().setVisible(true);
+            // Passando o nome e o nível "Fácil" para a tela de jogo
+            new JogarQuiz(this.nomeAluno, "Fácil").setVisible(true);
         });
 
         p.add(btnJogar);
@@ -220,8 +220,11 @@ public class EscolherJogoAluno extends JFrame {
         };
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(x, 0, 60, 60); // Nova regra aplicada
-            b.addActionListener(e -> { this.dispose(); new MenuAluno().setVisible(true); });
+            b.setBounds(x, 0, 60, 60);
+            b.addActionListener(e -> { 
+                this.dispose(); 
+                new MenuAluno(this.nomeAluno).setVisible(true); // Volta passando o nome
+            });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
@@ -253,5 +256,7 @@ public class EscolherJogoAluno extends JFrame {
         }
     }
 
-    public static void main(String[] args) { SwingUtilities.invokeLater(() -> new EscolherJogoAluno()); }
+    public static void main(String[] args) { 
+        SwingUtilities.invokeLater(() -> new EscolherJogoAluno("Aluno Teste")); 
+    }
 }

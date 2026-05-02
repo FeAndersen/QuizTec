@@ -1,6 +1,5 @@
 package Aluno;
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -8,8 +7,10 @@ import java.io.File;
 public class HistoricoAluno extends JFrame {
 
     private Font robotoBold36, robotoBold24, robotoBold14, robotoBold10;
+    private String nomeAluno; // Armazena o nome do aluno logado
 
-    public HistoricoAluno() {
+    public HistoricoAluno(String nome) {
+        this.nomeAluno = nome;
         carregarFontes();
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -45,7 +46,8 @@ public class HistoricoAluno extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, Aluno", SwingConstants.RIGHT);
+        // Exibe o nome dinâmico do aluno
+        JLabel txtOla = new JLabel("Olá, " + nomeAluno, SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -90,9 +92,6 @@ public class HistoricoAluno extends JFrame {
         linha.setOpaque(false);
         cardPrincipal.add(linha);
 
-        // ==========================================
-        // LISTA DE HISTÓRICO COM SCROLL
-        // ==========================================
         int wLista = (int) (larguraCard * 0.85);
         int hLista = alturaCard - 180;
         int xLista = (larguraCard - wLista) / 2;
@@ -106,7 +105,7 @@ public class HistoricoAluno extends JFrame {
         int hItem = 80;
         int espacoItem = 15;
 
-        // Dados simulados
+        // Dados simulados (No futuro, você buscará isso do banco usando o nomeAluno)
         String[] nomesJogos = {"Quiz de Vidrarias - 1º Ano A", "Quiz de Função - 1º Ano D", "Quiz de Vidrarias - 1º Ano A", "Quiz de Sistemas - 1º Ano D"};
         String[] icones = {"QuizTec\\images\\labs.png", "QuizTec\\images\\biotech.png", "QuizTec\\images\\biotech.png", "QuizTec\\images\\fluid_med.png"};
         int[] acertosArr = {9, 9, 9, 9};
@@ -128,7 +127,6 @@ public class HistoricoAluno extends JFrame {
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0,0)); 
         
         cardPrincipal.add(scrollPane);
-
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);
 
@@ -145,7 +143,6 @@ public class HistoricoAluno extends JFrame {
                 g2.setColor(Color.WHITE);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 25, 25);
                 
-                // Ícone do Nível
                 try {
                     Image imgLvl = new ImageIcon(iconePath).getImage();
                     g2.drawImage(imgLvl, 20, 10, 60, 60, null);
@@ -153,7 +150,6 @@ public class HistoricoAluno extends JFrame {
 
                 g2.setColor(corAzulEscuro);
 
-                // --- BLOCO 1: Acertos (Ícone insert_chart.png) ---
                 int xAcertos = getWidth() - 320;
                 try {
                     Image imgChart = new ImageIcon("QuizTec\\images\\insert_chart.png").getImage();
@@ -164,7 +160,6 @@ public class HistoricoAluno extends JFrame {
                 g2.setFont(robotoBold24);
                 g2.drawString(acertos + " / 10", xAcertos + 55, 40);
 
-                // --- BLOCO 2: Pontuação (Ícone leaderboard.png) ---
                 int xPontos = getWidth() - 170;
                 try {
                     Image imgLeader = new ImageIcon("QuizTec\\images\\leaderboard.png").getImage();
@@ -206,8 +201,11 @@ public class HistoricoAluno extends JFrame {
         };
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(x, 0, 60, 60); // REGRA APLICADA AQUI
-            b.addActionListener(e -> { this.dispose(); new MenuAluno().setVisible(true); });
+            b.setBounds(x, 0, 60, 60);
+            b.addActionListener(e -> { 
+                this.dispose(); 
+                new MenuAluno(this.nomeAluno).setVisible(true); // Volta passando o nome
+            });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
@@ -230,7 +228,7 @@ public class HistoricoAluno extends JFrame {
             robotoBold36 = baseFont.deriveFont(Font.BOLD, 36f);
             robotoBold24 = baseFont.deriveFont(Font.BOLD, 24f);
             robotoBold14 = baseFont.deriveFont(Font.BOLD, 14f);
-            robotoBold10 = baseFont.deriveFont(Font.BOLD, 10f); // Fonte menorzinha para os labels "Acertos" e "Sua pontuação"
+            robotoBold10 = baseFont.deriveFont(Font.BOLD, 10f);
         } catch (Exception e) {
             robotoBold36 = new Font("Arial", Font.BOLD, 36);
             robotoBold24 = new Font("Arial", Font.BOLD, 24);
@@ -239,5 +237,7 @@ public class HistoricoAluno extends JFrame {
         }
     }
 
-    public static void main(String[] args) { SwingUtilities.invokeLater(() -> new HistoricoAluno()); }
+    public static void main(String[] args) { 
+        SwingUtilities.invokeLater(() -> new HistoricoAluno("Aluno Teste")); 
+    }
 }

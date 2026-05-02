@@ -10,8 +10,10 @@ import java.io.File;
 public class MenuAluno extends JFrame {
 
     private Font robotoBold32, robotoBold24, robotoBold36;
+    private String nomeAluno;
 
-    public MenuAluno() {
+    public MenuAluno(String nome) {
+    this.nomeAluno = nome;
         carregarFontes();
 
         setUndecorated(true);
@@ -48,7 +50,7 @@ public class MenuAluno extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, Aluno!", SwingConstants.RIGHT);
+       JLabel txtOla = new JLabel("Olá, " + nomeAluno + "!", SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -152,9 +154,15 @@ public class MenuAluno extends JFrame {
         b.setFocusPainted(false);
         b.setBorderPainted(false);
 
-        b.addActionListener(e -> {
-            if (idAcao == 1) { this.dispose(); new SelecaoNivel().setVisible(true); }
-            else if (idAcao == 3) { this.dispose(); new Login().setVisible(true); }
+      b.addActionListener(e -> {
+            if (idAcao == 1) { 
+                this.dispose(); 
+                new SelecaoNivel(this.nomeAluno).setVisible(true); 
+            }
+            else if (idAcao == 3) { 
+                this.dispose(); 
+                new Login().setVisible(true); 
+            }
         });
 
         b.addMouseListener(new MouseAdapter() {
@@ -224,6 +232,6 @@ public class MenuAluno extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MenuAluno());
+        SwingUtilities.invokeLater(() -> new MenuAluno("Visitante"));
     }
 }

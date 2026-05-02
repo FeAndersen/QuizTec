@@ -1,6 +1,6 @@
 package Aluno;
-import javax.swing.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -8,10 +8,11 @@ import java.io.File;
 public class SelecaoNivel extends JFrame {
 
     private Font robotoBold32, robotoBold24, robotoBold36, robotoBold18;
+    private String nomeAluno; 
 
-    public SelecaoNivel() {
+    public SelecaoNivel(String nome) { 
+        this.nomeAluno = nome;
         carregarFontes();
-
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -46,7 +47,8 @@ public class SelecaoNivel extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, Aluno!", SwingConstants.RIGHT);
+        // NOME DINÂMICO: Agora usa a variável nomeAluno
+        JLabel txtOla = new JLabel("Olá, " + nomeAluno + "!", SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -109,36 +111,28 @@ public class SelecaoNivel extends JFrame {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
                 
-                // Desenhar a imagem PNG
                 try {
                     ImageIcon icon = new ImageIcon(caminhoIcone);
                     Image img = icon.getImage();
                     int iconDim = 100;
                     int iconX = (getWidth() - iconDim) / 2;
-                    int iconY = 70; // Mais para baixo por causa do texto Fácil/Médio/Difícil
+                    int iconY = 70; 
                     g2.drawImage(img, iconX, iconY, iconDim, iconDim, null);
-                } catch (Exception e) {
-                    System.out.println("Erro ao carregar: " + caminhoIcone);
-                }
+                } catch (Exception e) {}
 
                 g2.setColor(corAzulEscuro);
                 FontMetrics fm;
-                
                 g2.setFont(robotoBold24);
                 fm = g2.getFontMetrics();
                 g2.drawString(txtTopo, (getWidth() - fm.stringWidth(txtTopo)) / 2, 45);
-
                 g2.setFont(robotoBold36);
                 fm = g2.getFontMetrics();
                 g2.drawString(txtMeio, (getWidth() - fm.stringWidth(txtMeio)) / 2, getHeight() - 80);
-
                 g2.setFont(robotoBold18); 
                 fm = g2.getFontMetrics();
-                
                 if (txtBase.contains(";")) {
                     String[] partes = txtBase.split(";");
                     g2.drawString(partes[0], (getWidth() - fm.stringWidth(partes[0])) / 2, getHeight() - 45);
@@ -157,6 +151,12 @@ public class SelecaoNivel extends JFrame {
         b.setFocusPainted(false);
         b.setBorderPainted(false);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // AÇÃO: Clique no nível abre o jogo enviando o nome e o nível
+        b.addActionListener(e -> {
+            this.dispose();
+            new JogarQuiz(this.nomeAluno, txtTopo).setVisible(true);
+        });
 
         b.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) { b.setBackground(new Color(240, 240, 240)); b.repaint(); }
@@ -181,7 +181,11 @@ public class SelecaoNivel extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(0, 0, 60, 60); 
-            b.addActionListener(e -> { this.dispose(); new MenuAluno().setVisible(true); });
+            // VOLTAR: Devolve o nome para o menu
+            b.addActionListener(e -> { 
+                this.dispose(); 
+                new MenuAluno(this.nomeAluno).setVisible(true); 
+            });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
@@ -226,6 +230,6 @@ public class SelecaoNivel extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new SelecaoNivel());
+        SwingUtilities.invokeLater(() -> new SelecaoNivel("Visitante"));
     }
 }

@@ -1,6 +1,6 @@
 package Cadastro;
-import javax.swing.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.TextAttribute;
@@ -8,10 +8,15 @@ import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+// Importando o seu DAO
+import Cadastro.modelo.UsuarioDAO;
 
 public class Login extends JFrame {
 
     private Font fontTitulo, robotoSemiBold40, robotoRegular20;
+    // --- AJUSTE 1: Transformando em variáveis de classe para o botão conseguir ler ---
+    private JTextField txtEmail;
+    private JPasswordField txtSenha; 
 
     public Login() {
         carregarFontes();
@@ -35,7 +40,6 @@ public class Login extends JFrame {
         painelFundo.setLayout(null);
         setContentPane(painelFundo);
 
-        // --- Lógica do Bloco Central Mantida ---
         int larguraBloco = (int) (larguraTela * 0.85);
         int alturaBloco = (int) (alturaTela * 0.85);
         int xCentro = (larguraTela - larguraBloco) / 2;
@@ -47,16 +51,12 @@ public class Login extends JFrame {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 Shape formaArredondada = new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 80, 80);
                 g2.setClip(formaArredondada);
-
                 g2.setColor(Color.WHITE);
                 g2.fillRect(0, 0, getWidth(), getHeight());
-
                 g2.setColor(new Color(178, 0, 0));
                 g2.fillRect(getWidth() / 2, 0, (getWidth() / 2) + 1, getHeight());
-
                 g2.dispose();
             }
         };
@@ -78,8 +78,17 @@ public class Login extends JFrame {
         txtTitulo.setBounds(fieldX, centroY - 240, fieldW + 100, 100);
         blocoCentral.add(txtTitulo);
 
-        blocoCentral.add(criarCampo("Inserir email", fieldX, centroY - 90, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir senha", fieldX, centroY + 0, fieldW, fieldH));
+        // --- AJUSTE 2: Inicializando os campos ---
+        txtEmail = criarCampo("Inserir email", fieldX, centroY - 90, fieldW, fieldH);
+        blocoCentral.add(txtEmail);
+
+        // Usei um campo de senha de verdade para segurança
+        txtSenha = new JPasswordField();
+        txtSenha.setBounds(fieldX, centroY, fieldW, fieldH);
+        txtSenha.setBackground(new Color(220, 220, 220));
+        txtSenha.setHorizontalAlignment(JTextField.CENTER);
+        txtSenha.setBorder(null);
+        blocoCentral.add(txtSenha);
 
         JButton btnEntrar = new JButton("Entrar") {
             @Override
@@ -89,7 +98,6 @@ public class Login extends JFrame {
                 g2.setColor(new Color(30, 55, 90));
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                 super.paintComponent(g);
-                
             }
         };
         btnEntrar.setBounds(fieldX, centroY + 110, fieldW, 70);
@@ -99,6 +107,24 @@ public class Login extends JFrame {
         btnEntrar.setBorderPainted(false);
         btnEntrar.setFocusPainted(false);
         btnEntrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // --- AJUSTE 3: Lógica de Login real com o Banco ---
+        btnEntrar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String email = txtEmail.getText();
+                String senha = new String(txtSenha.getPassword());
+
+                UsuarioDAO dao = new UsuarioDAO();
+                if (dao.validarLogin(email, senha)) {
+                    JOptionPane.showMessageDialog(null, "Login realizado com sucesso!");
+                    dispose(); 
+                    new Aluno.MenuAluno(email).setVisible(true); // Abre a tela do aluno
+                } else {
+                    JOptionPane.showMessageDialog(null, "E-mail ou senha incorretos.");
+                }
+            }
+        });
         blocoCentral.add(btnEntrar);
 
         JLabel lblLink = new JLabel("<html><u>não tem login de acesso?</u></html>");
@@ -107,126 +133,67 @@ public class Login extends JFrame {
         lblLink.setBounds(fieldX, centroY + 190, fieldW, 30);
         lblLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
         blocoCentral.add(lblLink);
-        lblLink.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            dispose(); // Fecha o Login
-            new SelecaoCadastro().setVisible(true); // Abre a tela de escolha de Cadastro
-    }
-});
         
+        lblLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                dispose();
+                new SelecaoCadastro().setVisible(true);
+            }
+        });
 
         painelFundo.add(blocoCentral);
 
-        // --- NOVO PADRÃO DE BOTÕES ---
-        // Posicionados no canto superior direito, com um recuo de 10px do teto
         JButton btnFechar = criarBotaoControle("X", larguraTela - 50, 0);
         JButton btnMin = criarBotaoControle("-", larguraTela - 100, 0);
-
         painelFundo.add(btnFechar);
         painelFundo.add(btnMin);
-
-        // Garante que os botões fiquem sempre na frente de tudo
-        painelFundo.setComponentZOrder(btnFechar, 0);
-        painelFundo.setComponentZOrder(btnMin, 0);
-
-        // --- CORREÇÃO DO MINIMIZAR ---
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-                setExtendedState(JFrame.MAXIMIZED_BOTH);
-                repaint();
-                revalidate();
-            }
-        });
 
         setVisible(true);
     }
 
-    // --- NOVO MÉTODO ENCAPSULADO (100% Invisível até o Hover) ---
+    // Mantive seus métodos auxiliares abaixo...
     private JButton criarBotaoControle(String texto, int x, int y) {
-
-        // A MÁGICA AQUI: O quarto número é o Alpha (transparência).
-        // 0 significa totalmente transparente (invisível sobre a foto de fundo)
         Color corInvisivel = new Color(0, 0, 0, 0);
-        Color corHover;
-
-        if (texto.equals("X")) {
-            corHover = new Color(232, 17, 35); // Vermelho vivo do Windows
-        } else {
-            corHover = new Color(100, 100, 100); // Cinza para o Minimizar
-        }
-
+        Color corHover = texto.equals("X") ? new Color(232, 17, 35) : new Color(100, 100, 100);
         JButton b = new JButton(texto) {
             @Override
             protected void paintComponent(Graphics g) {
-                // Desenha o fundo transparente ou colorido (dependendo do mouse)
                 g.setColor(getBackground());
                 g.fillRect(0, 0, getWidth(), getHeight());
                 super.paintComponent(g);
             }
         };
-
         b.setFont(new Font("Arial", Font.BOLD, 24));
         b.setBounds(x, y, 50, 40);
-        b.setMargin(new Insets(0, 0, 0, 0)); // Evita o bug do "..."
-
-        b.setBackground(corInvisivel); // Inicia 100% transparente
-        b.setForeground(Color.WHITE); // Texto sempre branco
-
-        // Limpeza dos padrões do Java
+        b.setBackground(corInvisivel);
+        b.setForeground(Color.WHITE);
         b.setOpaque(false);
         b.setContentAreaFilled(false);
         b.setFocusPainted(false);
         b.setBorderPainted(false);
-        b.setRolloverEnabled(false);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        // Ações de clique
-        if (texto.equals("X")) {
-            b.addActionListener(e -> System.exit(0));
-        } else if (texto.equals("-")) {
-            b.addActionListener(e -> setState(Frame.ICONIFIED));
-        }
-
-        // Lógica do Efeito Hover
+        if (texto.equals("X")) b.addActionListener(e -> System.exit(0));
+        else b.addActionListener(e -> setState(Frame.ICONIFIED));
         b.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                b.setBackground(corHover); // Fica Vermelho ou Cinza
-                b.repaint();
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                b.setBackground(corInvisivel); // Volta a ser 100% transparente
-                b.repaint();
-            }
+            public void mouseEntered(MouseEvent e) { b.setBackground(corHover); b.repaint(); }
+            public void mouseExited(MouseEvent e) { b.setBackground(corInvisivel); b.repaint(); }
         });
-
         return b;
     }
 
-    // --- MÉTODOS MANTIDOS ---
     private void carregarFontes() {
         try {
             File fontFile = new File("RobotoSerif-Bold.ttf");
             Font baseFont = Font.createFont(Font.TRUETYPE_FONT, fontFile);
-
             Map<TextAttribute, Object> atributos = new HashMap<>();
             atributos.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_EXTRABOLD);
             atributos.put(TextAttribute.SIZE, 64f);
-
             fontTitulo = baseFont.deriveFont(atributos);
             robotoSemiBold40 = baseFont.deriveFont(Font.BOLD, 36f);
             robotoRegular20 = baseFont.deriveFont(Font.PLAIN, 18f);
         } catch (Exception e) {
-            Map<TextAttribute, Object> fallback = new HashMap<>();
-            fallback.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_EXTRABOLD);
-            fallback.put(TextAttribute.SIZE, 64f);
-            fallback.put(TextAttribute.FAMILY, "Serif");
-
-            fontTitulo = Font.getFont(fallback);
+            fontTitulo = new Font("Serif", Font.BOLD, 64);
             robotoSemiBold40 = new Font("sansserif", Font.BOLD, 35);
             robotoRegular20 = new Font("sansserif", Font.PLAIN, 18);
         }
@@ -242,17 +209,10 @@ public class Login extends JFrame {
         campo.setBorder(null);
         campo.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
-                if (campo.getText().equals(placeholder)) {
-                    campo.setText("");
-                    campo.setForeground(Color.BLACK);
-                }
+                if (campo.getText().equals(placeholder)) { campo.setText(""); campo.setForeground(Color.BLACK); }
             }
-
             public void focusLost(FocusEvent e) {
-                if (campo.getText().isEmpty()) {
-                    campo.setText(placeholder);
-                    campo.setForeground(Color.GRAY);
-                }
+                if (campo.getText().isEmpty()) { campo.setText(placeholder); campo.setForeground(Color.GRAY); }
             }
         });
         return campo;
@@ -267,9 +227,7 @@ public class Login extends JFrame {
             JLabel label = new JLabel(new ImageIcon(img));
             label.setBounds(xCentro - (novaLarg / 2), yPos - (novaAlt / 2), novaLarg, novaAlt);
             painel.add(label);
-        } catch (Exception e) {
-            System.out.println("Erro ao carregar imagem: " + path);
-        }
+        } catch (Exception e) {}
     }
 
     public static void main(String[] args) {

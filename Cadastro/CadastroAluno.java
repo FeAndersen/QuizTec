@@ -1,8 +1,8 @@
 package Cadastro;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicComboBoxUI;
-
-import Aluno.MenuAluno;
+import Cadastro.modelo.Aluno; // Import único e correto para o modelo
 
 import java.awt.*;
 import java.awt.event.*;
@@ -15,6 +15,8 @@ import java.util.Map;
 public class CadastroAluno extends JFrame {
 
     private Font fontTitulo, robotoSemiBold40, robotoRegular20;
+    private JTextField txtEmail, txtNome, txtSenha, txtConfirmarSenha;
+    private JComboBox<String> comboTurma;
 
     public CadastroAluno() {
         carregarFontes();
@@ -80,13 +82,20 @@ public class CadastroAluno extends JFrame {
         blocoCentral.add(txtTitulo);
 
         int startYCampos = centroY - 160;
-        blocoCentral.add(criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH));
-        
-        // Aqui chamamos o novo dropdown polido
-        blocoCentral.add(criarDropdownTurma(fieldX, startYCampos + (fieldH + espacoY) * 4, fieldW, fieldH));
+        txtEmail = criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH);
+        blocoCentral.add(txtEmail);
+
+        txtNome = criarCampo("Inserir nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH);
+        blocoCentral.add(txtNome);
+
+        txtSenha = criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH);
+        blocoCentral.add(txtSenha);
+
+        txtConfirmarSenha = criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH);
+        blocoCentral.add(txtConfirmarSenha);
+
+        comboTurma = criarDropdownTurma(fieldX, startYCampos + (fieldH + espacoY) * 4, fieldW, fieldH);
+        blocoCentral.add(comboTurma);
 
         JButton btnSeguir = new JButton("Seguir") {
             @Override
@@ -104,16 +113,37 @@ public class CadastroAluno extends JFrame {
         btnSeguir.setContentAreaFilled(false);
         btnSeguir.setBorderPainted(false);
         btnSeguir.setFocusPainted(false);
-        btnSeguir.setBorder(null); 
         btnSeguir.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        btnSeguir.addActionListener(e -> {
-            System.out.println("Aluno Cadastrado!");
-            this.dispose();
-            new MenuAluno().setVisible(true); 
-        });
-        blocoCentral.add(btnSeguir);
 
+        // LÓGICA DO BOTÃO ARRUMADA AQUI:
+        btnSeguir.addActionListener(e -> {
+            String email = txtEmail.getText();
+            String nome = txtNome.getText();
+            String senha = txtSenha.getText();
+            String confirma = txtConfirmarSenha.getText();
+            String turma = (String) comboTurma.getSelectedItem();
+
+            if (nome.equals("Inserir nome completo") || email.equals("Inserir email") || senha.isEmpty() || turma.equals("Inserir turma")) {
+                JOptionPane.showMessageDialog(null, "Preencha todos os campos corretamente!");
+                return;
+            }
+
+            if (!senha.equals(confirma)) {
+                JOptionPane.showMessageDialog(null, "As senhas não coincidem!");
+                return;
+            }
+
+            // Criando o objeto Aluno (Certifique-se que Aluno.java tem o construtor correto)
+            Aluno novoAluno = new Aluno(nome, email, senha, turma);
+            System.out.println("Back-end processado para: " + novoAluno.getNome());
+
+            JOptionPane.showMessageDialog(null, "Cadastro realizado com sucesso!");
+            this.dispose();
+            // Descomente a linha abaixo quando criar a tela MenuAluno
+            // new MenuAluno().setVisible(true); 
+        });
+        
+        blocoCentral.add(btnSeguir);
         painelFundo.add(blocoCentral);
 
         painelFundo.add(criarBotaoControle("X", larguraTela - 50, 0));
@@ -151,9 +181,6 @@ public class CadastroAluno extends JFrame {
         return campo;
     }
 
-    // ==========================================
-    // MÉTODO ATUALIZADO: Dropdown de Turma
-    // ==========================================
     private JComboBox<String> criarDropdownTurma(int x, int y, int w, int h) {
         String[] turmas = {"Inserir turma", "1º Ano A", "1º Ano B", "1º Ano C", "1º Ano D", "2º Ano A", "3º Ano A"};
         JComboBox<String> combo = new JComboBox<>(turmas);
@@ -161,27 +188,23 @@ public class CadastroAluno extends JFrame {
         combo.setFont(robotoRegular20);
         combo.setBackground(new Color(220, 220, 220));
         combo.setForeground(Color.DARK_GRAY);
-        
-        // Adiciona a exata mesma borda cinza fina dos JTextFields
         combo.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         
-        // Renderizador customizado para FORÇAR a centralização absoluta do texto
         DefaultListCellRenderer dlcr = new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                label.setHorizontalAlignment(SwingConstants.CENTER); // Centraliza de verdade
+                label.setHorizontalAlignment(SwingConstants.CENTER);
                 if (isSelected) {
-                    label.setBackground(new Color(200, 200, 200)); // Cor ao passar o mouse na lista
+                    label.setBackground(new Color(200, 200, 200));
                 } else {
-                    label.setBackground(new Color(220, 220, 220)); // Cor normal
+                    label.setBackground(new Color(220, 220, 220));
                 }
                 return label;
             }
         };
         combo.setRenderer(dlcr);
         
-        // UI customizada para desenhar uma seta elegante em vez de usar a letra "V"
         combo.setUI(new BasicComboBoxUI() {
             @Override
             protected JButton createArrowButton() {
@@ -193,13 +216,10 @@ public class CadastroAluno extends JFrame {
                         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                         g2.setColor(Color.DARK_GRAY);
                         g2.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                        
-                        // Desenha um chevronzinho moderno
                         int cx = getWidth() / 2;
                         int cy = getHeight() / 2;
                         g2.drawLine(cx - 5, cy - 2, cx, cy + 3);
                         g2.drawLine(cx, cy + 3, cx + 5, cy - 2);
-                        
                         g2.dispose();
                     }
                 };
@@ -210,7 +230,6 @@ public class CadastroAluno extends JFrame {
                 return button;
             }
         });
-        
         return combo;
     }
 
@@ -230,7 +249,7 @@ public class CadastroAluno extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(x, 0, 60, 60); 
-            b.addActionListener(e -> { this.dispose(); new SelecaoCadastro().setVisible(true); });
+            b.addActionListener(e -> { this.dispose(); /* new SelecaoCadastro().setVisible(true); */ });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
@@ -238,14 +257,12 @@ public class CadastroAluno extends JFrame {
             else if (texto.equals("-")) b.addActionListener(e -> setState(Frame.ICONIFIED));
         }
 
-        b.setMargin(new Insets(0, 0, 0, 0)); 
         b.setBackground(corInvisivel); 
         b.setForeground(Color.WHITE);
         b.setOpaque(false);
         b.setContentAreaFilled(false);
         b.setBorderPainted(false);
         b.setFocusPainted(false);
-        b.setBorder(null); 
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         b.addMouseListener(new MouseAdapter() {

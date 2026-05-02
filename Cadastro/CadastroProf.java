@@ -1,6 +1,7 @@
 package Cadastro;
-import javax.swing.*;
 
+import javax.swing.*;
+import Cadastro.modelo.Professor; 
 import Professor.MenuProf;
 
 import java.awt.*;
@@ -14,6 +15,8 @@ import java.util.Map;
 public class CadastroProf extends JFrame {
 
     private Font fontTitulo, robotoSemiBold40, robotoRegular20;
+    // DECLARANDO AS VARIÁVEIS DOS CAMPOS (Obrigatório para o Back-end)
+    private JTextField txtEmail, txtNome, txtSenha, txtConfirmarSenha;
 
     public CadastroProf() {
         carregarFontes();
@@ -80,10 +83,19 @@ public class CadastroProf extends JFrame {
         blocoCentral.add(txtTitulo);
 
         int startYCampos = centroY - 140;
-        blocoCentral.add(criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir seu nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH));
+        
+        // INICIALIZANDO OS CAMPOS NAS VARIÁVEIS
+        txtEmail = criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH);
+        blocoCentral.add(txtEmail);
+
+        txtNome = criarCampo("Inserir seu nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH);
+        blocoCentral.add(txtNome);
+
+        txtSenha = criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH);
+        blocoCentral.add(txtSenha);
+
+        txtConfirmarSenha = criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH);
+        blocoCentral.add(txtConfirmarSenha);
 
         JButton btnSeguir = new JButton("Seguir") {
             @Override
@@ -101,16 +113,40 @@ public class CadastroProf extends JFrame {
         btnSeguir.setContentAreaFilled(false);
         btnSeguir.setBorderPainted(false);
         btnSeguir.setFocusPainted(false);
-        btnSeguir.setBorder(null); // Remove qualquer borda residual
+        btnSeguir.setBorder(null); 
         btnSeguir.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
+        // LÓGICA DO BOTÃO TOTALMENTE ARRUMADA
         btnSeguir.addActionListener(e -> {
-            System.out.println("Professor Cadastrado!");
+            String email = txtEmail.getText();
+            String nome = txtNome.getText();
+            String senha = txtSenha.getText();
+            String confirma = txtConfirmarSenha.getText();
+            // Para o professor, como não tem dropdown no seu código ainda, vamos deixar uma disciplina padrão
+            String disciplina = "Geral"; 
+
+            // Validação
+            if (nome.equals("Inserir seu nome completo") || email.equals("Inserir email") || senha.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Preencha todos os campos corretamente!");
+                return;
+            }
+
+            if (!senha.equals(confirma)) {
+                JOptionPane.showMessageDialog(null, "As senhas não coincidem!");
+                return;
+            }
+
+            // CRIANDO O OBJETO PROFESSOR
+            Professor novoProf = new Professor(nome, email, senha, disciplina);
+            
+            System.out.println("Professor Cadastrado: " + novoProf.getNome());
+            JOptionPane.showMessageDialog(null, "Cadastro de Professor realizado!");
+            
             this.dispose();
             new MenuProf().setVisible(true); 
         });
+        
         blocoCentral.add(btnSeguir);
-
         painelFundo.add(blocoCentral);
 
         painelFundo.add(criarBotaoControle("X", larguraTela - 50, 0));
@@ -164,7 +200,7 @@ public class CadastroProf extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(x, 0, 60, 60); 
-            b.addActionListener(e -> { this.dispose(); new SelecaoCadastro().setVisible(true); });
+            b.addActionListener(e -> { this.dispose(); /* new SelecaoCadastro().setVisible(true); */ });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
@@ -172,14 +208,12 @@ public class CadastroProf extends JFrame {
             else if (texto.equals("-")) b.addActionListener(e -> setState(Frame.ICONIFIED));
         }
 
-        b.setMargin(new Insets(0, 0, 0, 0)); 
         b.setBackground(corInvisivel); 
         b.setForeground(Color.WHITE);
         b.setOpaque(false);
         b.setContentAreaFilled(false);
         b.setBorderPainted(false);
         b.setFocusPainted(false);
-        b.setBorder(null); // Mata a borda de foco do Swing
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         b.addMouseListener(new MouseAdapter() {
