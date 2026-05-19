@@ -1,0 +1,10 @@
+# Arquivos compilados Java
+*.class
+
+# Arquivos temporários do Windows
+Thumbs.db
+Desktop.ini
+
+# Pasta de saída se criar uma no futuro
+out/
+build/
