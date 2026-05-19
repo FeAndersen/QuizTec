@@ -8,6 +8,13 @@ import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.mindrot.jbcrypt.BCrypt;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Connection;
+import util.Conexao;
+import util.Sessao;
+
 
 public class Login extends JFrame {
 
@@ -28,7 +35,7 @@ public class Login extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -65,8 +72,8 @@ public class Login extends JFrame {
         blocoCentral.setBounds(xCentro, yCentro, larguraBloco, alturaBloco);
 
         int centroY = alturaBloco / 2;
-        adicionarLogo(blocoCentral, "QuizTec\\images\\Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
-        adicionarLogo(blocoCentral, "QuizTec\\images\\Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
+        adicionarLogo(blocoCentral, "images\\Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
+        adicionarLogo(blocoCentral, "images\\Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
 
         int fieldW = (int) (larguraBloco * 0.32);
         int fieldH = 55;
@@ -78,8 +85,11 @@ public class Login extends JFrame {
         txtTitulo.setBounds(fieldX, centroY - 240, fieldW + 100, 100);
         blocoCentral.add(txtTitulo);
 
-        blocoCentral.add(criarCampo("Inserir email", fieldX, centroY - 90, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir senha", fieldX, centroY + 0, fieldW, fieldH));
+
+        JTextField campoEmail = criarCampo("Inserir email", fieldX, centroY - 90, fieldW, fieldH);
+        JTextField campoSenha = criarCampo("Inserir senha", fieldX, centroY + 0, fieldW, fieldH);
+        blocoCentral.add(campoEmail);
+        blocoCentral.add(campoSenha);
 
         JButton btnEntrar = new JButton("Entrar") {
             @Override
@@ -99,6 +109,56 @@ public class Login extends JFrame {
         btnEntrar.setBorderPainted(false);
         btnEntrar.setFocusPainted(false);
         btnEntrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+
+       btnEntrar.addActionListener(e -> {
+        String email = campoEmail.getText().trim();
+        String senha = campoSenha.getText().trim();
+
+        if (email.isEmpty() || senha.isEmpty()) {
+        JOptionPane.showMessageDialog(null, "Preencha todos os campos.");
+        return;
+        }
+
+        try (Connection con = Conexao.conectar()) {
+            PreparedStatement stmtProf = con.prepareStatement(
+                "SELECT id_professor, nome_professor, senha_professor FROM professor WHERE email_professor = ?"
+            );
+            stmtProf.setString(1, email);
+            ResultSet rsProf = stmtProf.executeQuery();
+
+            if (rsProf.next() && BCrypt.checkpw(senha, rsProf.getString("senha_professor"))) {
+                Sessao.idUsuario = rsProf.getInt("id_professor");
+                Sessao.tipoUsuario = "professor";
+                Sessao.nomeUsuario = rsProf.getString("nome_professor");
+                dispose();
+                new Professor.MenuProf().setVisible(true);
+                return;
+             }
+
+            PreparedStatement stmtAluno = con.prepareStatement(
+                "SELECT id_aluno, nome_aluno, senha_aluno FROM aluno WHERE email_aluno = ?"
+            );
+            stmtAluno.setString(1, email);
+            ResultSet rsAluno = stmtAluno.executeQuery();
+
+            if (rsAluno.next() && BCrypt.checkpw(senha, rsAluno.getString("senha_aluno"))) {
+                Sessao.idUsuario = rsAluno.getInt("id_aluno");
+                Sessao.tipoUsuario = "aluno";
+                Sessao.nomeUsuario = rsAluno.getString("nome_aluno");
+                dispose();
+                new Aluno.MenuAluno(Sessao.nomeUsuario).setVisible(true);
+                return;
+            }
+
+        JOptionPane.showMessageDialog(null, "Email ou senha incorretos.");
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Erro ao conectar com o banco de dados: " + ex.getMessage());
+        }
+});
+
+
         blocoCentral.add(btnEntrar);
 
         JLabel lblLink = new JLabel("<html><u>não tem login de acesso?</u></html>");

@@ -1,5 +1,6 @@
 {
   "java.project.referencedLibraries": [
-    "lib/**/*.jar"
+    "lib/jbcrypt-0.4.jar",
+    "lib/mysql-connector-j-9.7.0.jar"
   ]
 }
