@@ -1,8 +1,5 @@
 package Aluno;
 import javax.swing.*;
-
-import Aluno.MenuAluno;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
