@@ -261,7 +261,7 @@ public class JogarQuiz extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(x, 0, 60, 60); 
-            b.addActionListener(e -> { this.dispose(); new EscolherJogoAluno().setVisible(true); });
+            b.addActionListener(e -> { this.dispose(); new EscolherJogoAluno(texto).setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 

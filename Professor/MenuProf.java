@@ -1,7 +1,6 @@
 package Professor;
 import javax.swing.*;
 
-import Aluno.SeusAlunos;
 import Cadastro.Login;
 
 import java.awt.*;

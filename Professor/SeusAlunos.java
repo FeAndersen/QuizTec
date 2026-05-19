@@ -1,7 +1,5 @@
-package Aluno;
+package Professor;
 import javax.swing.*;
-
-import Professor.MenuProf;
 
 import java.awt.*;
 import java.awt.event.*;
