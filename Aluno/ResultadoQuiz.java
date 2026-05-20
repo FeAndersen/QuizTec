@@ -23,7 +23,7 @@ public class ResultadoQuiz extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 // Usando a regra do caminho da imagem
-                Image imgFundo = new ImageIcon("images\\fundo_etec.jpg").getImage();
+                Image imgFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg").getImage();
                 g.drawImage(imgFundo, 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -88,7 +88,7 @@ public class ResultadoQuiz extends JFrame {
 
         JLabel lblTrofeu = new JLabel();
         try {
-            Image imgTrofeu = new ImageIcon("images\\trophy.png").getImage().getScaledInstance(trophyW, trophyW, Image.SCALE_SMOOTH);
+            Image imgTrofeu = new ImageIcon("QuizTec\\images\\trophy.png").getImage().getScaledInstance(trophyW, trophyW, Image.SCALE_SMOOTH);
             lblTrofeu.setIcon(new ImageIcon(imgTrofeu));
         } catch (Exception e) {
             System.out.println("Erro ao carregar trophy.png");
@@ -120,8 +120,8 @@ public class ResultadoQuiz extends JFrame {
         int startY = 250; // Descidos um pouco para centralizar melhor no espaço vazio
 
         // Agora o botão 1 puxa a imagem replay.png perfeitamente!
-        cardPrincipal.add(criarBotaoAcaoGrande("Jogar", "novamente", "images\\replay.png", true, startX, startY, wBtn, hBtn));
-        cardPrincipal.add(criarBotaoAcaoGrande("Voltar para o", "menu", "images\\menu.png", false, startX + wBtn + espacoBtn, startY, wBtn, hBtn));
+        cardPrincipal.add(criarBotaoAcaoGrande("Jogar", "novamente", "QuizTec\\images\\replay.png", true, startX, startY, wBtn, hBtn));
+        cardPrincipal.add(criarBotaoAcaoGrande("Voltar para o", "menu", "QuizTec\\images\\menu.png", false, startX + wBtn + espacoBtn, startY, wBtn, hBtn));
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);

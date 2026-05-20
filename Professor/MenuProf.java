@@ -26,7 +26,7 @@ public class MenuProf extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images\\fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -91,9 +91,9 @@ public class MenuProf extends JFrame {
         int startY = 200;
 
         // Repare que adicionei um número (1, 2, 3) no final de cada chamada para identificar a ação!
-        cardPrincipal.add(criarBotaoCard("Criar novo", "jogo", "images\\add.png", startX, startY, largBotao, altBotao, 1));
-        cardPrincipal.add(criarBotaoCard("Editar os seus", "jogos", "images\\edit.png", startX + largBotao + espaco, startY, largBotao, altBotao, 2));
-        cardPrincipal.add(criarBotaoCard("Gerenciar", "Perfis", "images\\person_add_disabled.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao, 3));
+        cardPrincipal.add(criarBotaoCard("Criar novo", "jogo", "QuizTec\\images\\add.png", startX, startY, largBotao, altBotao, 1));
+        cardPrincipal.add(criarBotaoCard("Editar os seus", "jogos", "QuizTec\\images\\edit.png", startX + largBotao + espaco, startY, largBotao, altBotao, 2));
+        cardPrincipal.add(criarBotaoCard("Gerenciar", "Perfis", "QuizTec\\images\\person_add_disabled.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao, 3));
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);

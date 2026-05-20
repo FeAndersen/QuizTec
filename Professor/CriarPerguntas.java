@@ -53,7 +53,7 @@ public class CriarPerguntas extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images\\fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -105,7 +105,7 @@ public class CriarPerguntas extends JFrame {
         txtContador.setBounds(40, 30, 100, 40);
         cardPrincipal.add(txtContador);
 
-        JButton btnConcluir = criarBotaoImagem("images\\concluir.png", larguraCard - 100, 20, 60, 60);
+        JButton btnConcluir = criarBotaoImagem("QuizTec\\images\\concluir.png", larguraCard - 100, 20, 60, 60);
         btnConcluir.addActionListener(e -> {
             salvarEstadoAtual();
             abrirPopupSalvarJogo();

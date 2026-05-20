@@ -46,7 +46,7 @@ public class SeusJogosCriados extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("images\\fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -176,9 +176,9 @@ public class SeusJogosCriados extends JFrame {
                 // 1. ÍCONE DE DIFICULDADE (Sinalizado em AZUL)
                 // Lógica dinâmica para ler a String e puxar o PNG certo
                 try {
-                    String imgPath = "images\\labs.png"; // Padrão Fácil
-                    if (jogo.nivel.contains("Médio")) imgPath = "images\\biotech.png";
-                    else if (jogo.nivel.contains("Difícil")) imgPath = "images\\fluid_med.png";
+                    String imgPath = "QuizTec\\images\\labs.png"; // Padrão Fácil
+                    if (jogo.nivel.contains("Médio")) imgPath = "QuizTec\\images\\biotech.png";
+                    else if (jogo.nivel.contains("Difícil")) imgPath = "QuizTec\\images\\fluid_med.png";
                     
                     ImageIcon icon = new ImageIcon(imgPath);
                     Image img = icon.getImage();
@@ -210,9 +210,9 @@ public class SeusJogosCriados extends JFrame {
         int btnH = 70;
         int startXBtns = w - (btnW * 3) - 20;
 
-        p.add(criarBotaoAcao("Renomear", "images\\rename.png", startXBtns, 10, btnW, btnH));
-        p.add(criarBotaoAcao("Editar", "images\\edit.png", startXBtns + btnW, 10, btnW, btnH));
-        p.add(criarBotaoAcao("Apagar", "images\\delete.png", startXBtns + (btnW * 2), 10, btnW, btnH));
+        p.add(criarBotaoAcao("Renomear", "QuizTec\\images\\rename.png", startXBtns, 10, btnW, btnH));
+        p.add(criarBotaoAcao("Editar", "QuizTec\\images\\edit.png", startXBtns + btnW, 10, btnW, btnH));
+        p.add(criarBotaoAcao("Apagar", "QuizTec\\images\\delete.png", startXBtns + (btnW * 2), 10, btnW, btnH));
 
         return p;
     }

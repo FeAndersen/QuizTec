@@ -29,7 +29,7 @@ public class SelecaoCadastro extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 // Caminho atualizado para a pasta images
-                ImageIcon imagemFundo = new ImageIcon("images\\fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -67,8 +67,8 @@ public class SelecaoCadastro extends JFrame {
 
         // Logos (Atualizados para a pasta images)
         int centroY = alturaBloco / 2;
-        adicionarLogo(blocoCentral, "images\\Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
-        adicionarLogo(blocoCentral, "images\\Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
+        adicionarLogo(blocoCentral, "QuizTec\\images\\Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
+        adicionarLogo(blocoCentral, "QuizTec\\images\\Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
 
         // Título
         JLabel txtTitulo = new JLabel("Novo cadastro como", SwingConstants.CENTER);
@@ -84,8 +84,8 @@ public class SelecaoCadastro extends JFrame {
         int startX = (larguraBloco / 2) + ((larguraBloco / 2 - (largOpcao * 2 + espaco)) / 2);
         int startY = centroY - 60;
 
-        blocoCentral.add(criarBotaoOpcao("Professor", "images\\professor_bom.png", startX, startY, largOpcao, altOpcao));
-        blocoCentral.add(criarBotaoOpcao("Aluno", "images\\aluno.png", startX + largOpcao + espaco, startY, largOpcao, altOpcao));
+        blocoCentral.add(criarBotaoOpcao("Professor", "QuizTec\\images\\professor_bom.png", startX, startY, largOpcao, altOpcao));
+        blocoCentral.add(criarBotaoOpcao("Aluno", "QuizTec\\images\\aluno.png", startX + largOpcao + espaco, startY, largOpcao, altOpcao));
         
         painelFundo.add(blocoCentral);
 

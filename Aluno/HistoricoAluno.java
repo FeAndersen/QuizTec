@@ -26,7 +26,7 @@ public class HistoricoAluno extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                Image imgFundo = new ImageIcon("images\\fundo_etec.jpg").getImage();
+                Image imgFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg").getImage();
                 g.drawImage(imgFundo, 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -109,7 +109,7 @@ public class HistoricoAluno extends JFrame {
 
         // Dados simulados (No futuro, você buscará isso do banco usando o nomeAluno)
         String[] nomesJogos = {"Quiz de Vidrarias - 1º Ano A", "Quiz de Função - 1º Ano D", "Quiz de Vidrarias - 1º Ano A", "Quiz de Sistemas - 1º Ano D"};
-        String[] icones = {"images\\labs.png", "images\\biotech.png", "images\\biotech.png", "images\\fluid_med.png"};
+        String[] icones = {"QuizTec\\images\\labs.png", "QuizTec\\images\\biotech.png", "QuizTec\\images\\biotech.png", "QuizTec\\images\\fluid_med.png"};
         int[] acertosArr = {9, 9, 9, 9};
         int[] ptsArr = {1933, 1933, 1933, 1933};
 
@@ -154,7 +154,7 @@ public class HistoricoAluno extends JFrame {
 
                 int xAcertos = getWidth() - 320;
                 try {
-                    Image imgChart = new ImageIcon("images\\insert_chart.png").getImage();
+                    Image imgChart = new ImageIcon("QuizTec\\images\\insert_chart.png").getImage();
                     g2.drawImage(imgChart, xAcertos, 10, 40, 40, null);
                 } catch (Exception e) {}
                 g2.setFont(robotoBold10);
@@ -164,7 +164,7 @@ public class HistoricoAluno extends JFrame {
 
                 int xPontos = getWidth() - 170;
                 try {
-                    Image imgLeader = new ImageIcon("images\\leaderboard.png").getImage();
+                    Image imgLeader = new ImageIcon("QuizTec\\images\\leaderboard.png").getImage();
                     g2.drawImage(imgLeader, xPontos, 10, 40, 40, null);
                 } catch (Exception e) {}
                 g2.setFont(robotoBold10);
