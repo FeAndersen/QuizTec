@@ -35,7 +35,7 @@ public class Login extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -72,8 +72,8 @@ public class Login extends JFrame {
         blocoCentral.setBounds(xCentro, yCentro, larguraBloco, alturaBloco);
 
         int centroY = alturaBloco / 2;
-        adicionarLogo(blocoCentral, "QuizTec\\images\\Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
-        adicionarLogo(blocoCentral, "QuizTec\\images\\Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
+        adicionarLogo(blocoCentral, "images\\Logo_etec.jpg", larguraBloco / 4, centroY - 100, 0.25);
+        adicionarLogo(blocoCentral, "images\\Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
 
         int fieldW = (int) (larguraBloco * 0.32);
         int fieldH = 55;
@@ -87,31 +87,7 @@ public class Login extends JFrame {
 
 
         JTextField campoEmail = criarCampo("Inserir email", fieldX, centroY - 90, fieldW, fieldH);
-        JPasswordField campoSenha = new JPasswordField("Inserir senha");
-        campoSenha.setBounds(fieldX, centroY, fieldW, fieldH);
-        campoSenha.setBackground(new Color(220, 220, 220));
-        campoSenha.setFont(robotoRegular20);
-        campoSenha.setForeground(Color.GRAY);
-        campoSenha.setHorizontalAlignment(JTextField.CENTER);
-        campoSenha.setBorder(null);
-        campoSenha.setEchoChar((char)0);
-        campoSenha.addFocusListener(new FocusListener() {
-            public void focusGained(FocusEvent e) {
-                campoSenha.setEchoChar('•');
-                if (new String(campoSenha.getPassword()).equals("Inserir senha")) {
-                    campoSenha.setText("");
-                    campoSenha.setForeground(Color.BLACK);
-                }
-            }
-            public void focusLost(FocusEvent e) {
-                if (campoSenha.getPassword().length == 0) {
-                    campoSenha.setEchoChar((char)0);
-                    campoSenha.setText("Inserir senha");
-                    campoSenha.setForeground(Color.GRAY);
-                }
-            }
-        });
-
+        JTextField campoSenha = criarCampo("Inserir senha", fieldX, centroY + 0, fieldW, fieldH);
         blocoCentral.add(campoEmail);
         blocoCentral.add(campoSenha);
 
@@ -137,7 +113,7 @@ public class Login extends JFrame {
 
        btnEntrar.addActionListener(e -> {
         String email = campoEmail.getText().trim();
-        String senha = new String(campoSenha.getPassword()).trim();
+        String senha = campoSenha.getText().trim();
 
         if (email.isEmpty() || senha.isEmpty()) {
         JOptionPane.showMessageDialog(null, "Preencha todos os campos.");
