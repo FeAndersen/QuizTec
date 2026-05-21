@@ -87,7 +87,31 @@ public class Login extends JFrame {
 
 
         JTextField campoEmail = criarCampo("Inserir email", fieldX, centroY - 90, fieldW, fieldH);
-        JTextField campoSenha = criarCampo("Inserir senha", fieldX, centroY + 0, fieldW, fieldH);
+        JPasswordField campoSenha = new JPasswordField("Inserir senha");
+        campoSenha.setBounds(fieldX, centroY, fieldW, fieldH);
+        campoSenha.setBackground(new Color(220, 220, 220));
+        campoSenha.setFont(robotoRegular20);
+        campoSenha.setForeground(Color.GRAY);
+        campoSenha.setHorizontalAlignment(JTextField.CENTER);
+        campoSenha.setBorder(null);
+        campoSenha.setEchoChar((char)0);
+        campoSenha.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                campoSenha.setEchoChar('•');
+                if (new String(campoSenha.getPassword()).equals("Inserir senha")) {
+                    campoSenha.setText("");
+                    campoSenha.setForeground(Color.BLACK);
+                }
+            }
+            public void focusLost(FocusEvent e) {
+                if (campoSenha.getPassword().length == 0) {
+                    campoSenha.setEchoChar((char)0);
+                    campoSenha.setText("Inserir senha");
+                    campoSenha.setForeground(Color.GRAY);
+                }
+            }
+        });
+
         blocoCentral.add(campoEmail);
         blocoCentral.add(campoSenha);
 
@@ -113,7 +137,7 @@ public class Login extends JFrame {
 
        btnEntrar.addActionListener(e -> {
         String email = campoEmail.getText().trim();
-        String senha = campoSenha.getText().trim();
+        String senha = new String(campoSenha.getPassword()).trim();
 
         if (email.isEmpty() || senha.isEmpty()) {
         JOptionPane.showMessageDialog(null, "Preencha todos os campos.");
