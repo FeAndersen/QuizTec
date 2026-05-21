@@ -1,6 +1,5 @@
 package Aluno;
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -29,7 +28,7 @@ public class JogarQuiz extends JFrame {
         JPanel painelFundo = new JPanel() {
             @Override protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(new ImageIcon("QuizTec\\images\\fundo_etec.jpg").getImage(), 0, 0, getWidth(), getHeight(), this);
+                g.drawImage(new ImageIcon("images\\fundo_etec.jpg").getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
         painelFundo.setLayout(null);
@@ -82,7 +81,7 @@ public class JogarQuiz extends JFrame {
         // Ícone de Ajuda (Help)
         JButton btnAjuda = new JButton();
         try {
-            Image img = new ImageIcon("QuizTec\\images\\help.png").getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+            Image img = new ImageIcon("images\\help.png").getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
             btnAjuda.setIcon(new ImageIcon(img));
         } catch (Exception e) {}
         btnAjuda.setBounds(larguraCard - 90, 30, 60, 60);

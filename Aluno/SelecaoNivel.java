@@ -1,6 +1,5 @@
 package Aluno;
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -24,7 +23,7 @@ public class SelecaoNivel extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
+                ImageIcon imagemFundo = new ImageIcon("images\\fundo_etec.jpg");
                 g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -83,9 +82,9 @@ public class SelecaoNivel extends JFrame {
         int startX = (larguraCard - larguraTotalBotoes) / 2;
         int startY = 200;
 
-        cardPrincipal.add(criarBotaoNivel("Fácil", "Identificação", "Para aprender os nomes", "QuizTec\\images\\labs.png", startX, startY, largBotao, altBotao));
-        cardPrincipal.add(criarBotaoNivel("Médio", "Funções", "Para que serve;cada material?", "QuizTec\\images\\biotech.png", startX + largBotao + espaco, startY, largBotao, altBotao));
-        cardPrincipal.add(criarBotaoNivel("Difícil", "Sistemas", "Montagem de experimentos", "QuizTec\\images\\fluid_med.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoNivel("Fácil", "Identificação", "Para aprender os nomes", "images\\labs.png", startX, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoNivel("Médio", "Funções", "Para que serve;cada material?", "images\\biotech.png", startX + largBotao + espaco, startY, largBotao, altBotao));
+        cardPrincipal.add(criarBotaoNivel("Difícil", "Sistemas", "Montagem de experimentos", "images\\fluid_med.png", startX + (largBotao + espaco) * 2, startY, largBotao, altBotao));
 
         painelFundo.add(header);
         painelFundo.add(cardPrincipal);

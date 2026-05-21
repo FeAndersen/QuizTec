@@ -1,6 +1,5 @@
 package Aluno;
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Path2D;
@@ -26,7 +25,7 @@ public class EscolherJogoAluno extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(new ImageIcon("QuizTec\\images\\fundo_etec.jpg").getImage(), 0, 0, getWidth(), getHeight(), this);
+                g.drawImage(new ImageIcon("images\\fundo_etec.jpg").getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
         painelFundo.setLayout(null);
@@ -107,10 +106,10 @@ public class EscolherJogoAluno extends JFrame {
 
         String[] nomesJogos = {"Quiz de Vidrarias - 1º Ano A", "Quiz de Função - 1º Ano A", "Quiz de Função - 1º Ano A", "Quiz de Sistemas - 1º Ano A"};
         String[] icones = {
-            "QuizTec\\images\\labs.png", 
-            "QuizTec\\images\\labs.png", 
-            "QuizTec\\images\\labs.png", 
-            "QuizTec\\images\\labs.png"
+            "images\\labs.png", 
+            "images\\labs.png", 
+            "images\\labs.png", 
+            "images\\labs.png"
         };
 
         for (int i = 0; i < nomesJogos.length; i++) {
