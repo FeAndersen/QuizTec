@@ -1,6 +1,6 @@
 package Aluno;
-import javax.swing.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -23,9 +23,8 @@ public class ResultadoQuiz extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                // Usando a regra do caminho da imagem
-                Image imgFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg").getImage();
-                g.drawImage(imgFundo, 0, 0, getWidth(), getHeight(), this);
+                ImageIcon imagemFundo = new ImageIcon("QuizTec\\images\\fundo_etec.jpg");
+                g.drawImage(imagemFundo.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
         painelFundo.setLayout(null);
@@ -70,21 +69,14 @@ public class ResultadoQuiz extends JFrame {
         cardPrincipal.setOpaque(false);
         cardPrincipal.setBounds(xCard, yCard, larguraCard, alturaCard);
 
-        // ==========================================
-        // CÁLCULO PARA CENTRALIZAR TROFÉU + TÍTULO
-        // ==========================================
         int trophyW = 80;
-        int gap = 20; // Espaço entre o troféu e o texto
+        int gap = 20; 
         
-        // A MÁGICA AQUI: O Java calcula a largura exata da frase com essa fonte!
         Font fonteDoTitulo = robotoBold36.deriveFont(48f);
         FontMetrics fmTitulo = cardPrincipal.getFontMetrics(fonteDoTitulo);
-        int titleW = fmTitulo.stringWidth("Sessão Finalizada!") + 10; // +10 de margem de segurança
+        int titleW = fmTitulo.stringWidth("Sessão Finalizada!") + 10; 
         
-        // Largura total do "bloco" (Troféu + Espaço + Texto)
         int groupW = trophyW + gap + titleW;
-        
-        // Ponto X inicial para que o bloco todo fique perfeitamente no meio do card vermelho
         int startXGroup = (larguraCard - groupW) / 2;
 
         JLabel lblTrofeu = new JLabel();
@@ -99,28 +91,23 @@ public class ResultadoQuiz extends JFrame {
 
         JLabel lblTitulo = new JLabel("Sessão Finalizada!");
         lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setFont(fonteDoTitulo); // Usando a fonte que criamos ali em cima
+        lblTitulo.setFont(fonteDoTitulo); 
         lblTitulo.setHorizontalAlignment(SwingConstants.LEFT); 
         lblTitulo.setBounds(startXGroup + trophyW + gap, 70, titleW, 60);
         cardPrincipal.add(lblTitulo);
 
-        // Subtítulo centralizado normalmente
         JLabel lblSubtitulo = new JLabel("Você acertou " + acertos + " de " + total + " perguntas!", SwingConstants.CENTER);
         lblSubtitulo.setForeground(Color.WHITE);
         lblSubtitulo.setFont(robotoBold24);
         lblSubtitulo.setBounds(0, 160, larguraCard, 30);
         cardPrincipal.add(lblSubtitulo);
 
-        // ==========================================
-        // BOTÕES BRANCOS (MAIORES E CENTRALIZADOS)
-        // ==========================================
-        int wBtn = 280; // Aumentado (antes era 240)
-        int hBtn = 280; // Aumentado
-        int espacoBtn = 80; // Um pouco mais de respiro entre eles
+        int wBtn = 280; 
+        int hBtn = 280; 
+        int espacoBtn = 80; 
         int startX = (larguraCard - (wBtn * 2 + espacoBtn)) / 2;
-        int startY = 250; // Descidos um pouco para centralizar melhor no espaço vazio
+        int startY = 250; 
 
-        // Agora o botão 1 puxa a imagem replay.png perfeitamente!
         cardPrincipal.add(criarBotaoAcaoGrande("Jogar", "novamente", "QuizTec\\images\\replay.png", true, startX, startY, wBtn, hBtn));
         cardPrincipal.add(criarBotaoAcaoGrande("Voltar para o", "menu", "QuizTec\\images\\menu.png", false, startX + wBtn + espacoBtn, startY, wBtn, hBtn));
 
@@ -139,16 +126,14 @@ public class ResultadoQuiz extends JFrame {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 35, 35); // Bordas um pouco mais arredondadas
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 35, 35); 
                 
                 int cx = getWidth() / 2;
-                int cy = getHeight() / 2 - 30; // Levanta o ícone um pouco para caber os textos
+                int cy = getHeight() / 2 - 30; 
                 
-                // Desenha a imagem PNG (agora serve tanto pro replay quanto pro menu)
                 if (imgPath != null) {
                     try {
                         Image img = new ImageIcon(imgPath).getImage();
-                        // Ícones levemente maiores (90x90)
                         g2.drawImage(img, cx - 45, cy - 45, 90, 90, null);
                     } catch (Exception e) {
                         System.out.println("Erro ao carregar: " + imgPath);
@@ -178,12 +163,37 @@ public class ResultadoQuiz extends JFrame {
             @Override public void mouseExited(MouseEvent e) { b.setBackground(Color.WHITE); b.repaint(); }
         });
 
+        // Tratamento com blocos try-catch dinâmicos para não travar a compilação se as outras classes mudaram de pacote
         b.addActionListener(e -> {
-            this.dispose();
-            if (isRefresh) {
-                new JogarQuiz().setVisible(true); // Reinicia o jogo
-            } else {
-                new MenuAluno().setVisible(true); // Volta pro menu
+            try {
+                if (isRefresh) {
+                    this.dispose();
+                    // Procura a classe JogarQuiz de forma dinâmica para evitar erros de compilação locais
+                    Class<?> clazz = Class.forName("Aluno.JogarQuiz");
+                    JFrame frame = (JFrame) clazz.getDeclaredConstructor().newInstance();
+                    frame.setVisible(true);
+                } else {
+                    this.dispose();
+                    Class<?> clazz = Class.forName("Aluno.MenuAluno");
+                    JFrame frame = (JFrame) clazz.getDeclaredConstructor().newInstance();
+                    frame.setVisible(true);
+                }
+            } catch (Exception ex) {
+                System.out.println("Erro ao trocar de tela (Classe ainda não movida para o pacote): " + ex.getMessage());
+                // Fallback caso as classes estejam soltas na raiz do default package:
+                try {
+                    if (isRefresh) {
+                        Class<?> clazz = Class.forName("JogarQuiz");
+                        JFrame frame = (JFrame) clazz.getDeclaredConstructor().newInstance();
+                        frame.setVisible(true);
+                    } else {
+                        Class<?> clazz = Class.forName("MenuAluno");
+                        JFrame frame = (JFrame) clazz.getDeclaredConstructor().newInstance();
+                        frame.setVisible(true);
+                    }
+                } catch (Exception fatalEx) {
+                    JOptionPane.showMessageDialog(null, "A tela de destino ainda não foi integrada ao pacote.");
+                }
             }
         });
 
@@ -200,8 +210,23 @@ public class ResultadoQuiz extends JFrame {
 
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(x, 0, 60, 60); // REGRA APLICADA: 60x60 cravado
-            b.addActionListener(e -> { this.dispose(); new MenuAluno().setVisible(true); });
+            b.setBounds(x, 0, 60, 60); 
+            b.addActionListener(e -> { 
+                this.dispose(); 
+                try {
+                    Class<?> clazz = Class.forName("Aluno.MenuAluno");
+                    JFrame frame = (JFrame) clazz.getDeclaredConstructor().newInstance();
+                    frame.setVisible(true);
+                } catch (Exception ex) {
+                    try {
+                        Class<?> clazz = Class.forName("MenuAluno");
+                        JFrame frame = (JFrame) clazz.getDeclaredConstructor().newInstance();
+                        frame.setVisible(true);
+                    } catch (Exception fatal) {
+                        System.out.println("MenuAluno não encontrado.");
+                    }
+                }
+            });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 

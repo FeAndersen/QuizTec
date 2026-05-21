@@ -1,12 +1,5 @@
 package Cadastro;
 
-<<<<<<< Updated upstream
-import javax.swing.*;
-import Cadastro.modelo.Professor; 
-import Professor.MenuProf;
-
-=======
->>>>>>> Stashed changes
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.TextAttribute;
@@ -14,14 +7,6 @@ import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-<<<<<<< Updated upstream
-
-public class CadastroProf extends JFrame {
-
-    private Font fontTitulo, robotoSemiBold40, robotoRegular20;
-    // DECLARANDO AS VARIÁVEIS DOS CAMPOS (Obrigatório para o Back-end)
-    private JTextField txtEmail, txtNome, txtSenha, txtConfirmarSenha;
-=======
 import javax.swing.*;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -31,7 +16,6 @@ public class CadastroProf extends JFrame {
     private Font fontTitulo;
     private Font robotoSemiBold40;
     private Font robotoRegular20;
->>>>>>> Stashed changes
 
     public CadastroProf() {
         carregarFontes();
@@ -99,25 +83,17 @@ public class CadastroProf extends JFrame {
 
         int startYCampos = centroY - 140;
         
-<<<<<<< Updated upstream
-        // INICIALIZANDO OS CAMPOS NAS VARIÁVEIS
-        txtEmail = criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH);
-        blocoCentral.add(txtEmail);
-
-        txtNome = criarCampo("Inserir seu nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH);
-        blocoCentral.add(txtNome);
-
-        txtSenha = criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH);
-        blocoCentral.add(txtSenha);
-
-        txtConfirmarSenha = criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH);
-        blocoCentral.add(txtConfirmarSenha);
-=======
+        // 1º: Instanciando os campos corretamente antes de adicioná-los
+        JTextField campoEmail = criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH);
+        JTextField campoNome = criarCampo("Inserir seu nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH);
+        JTextField campoSenha = criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH);
+        JTextField campoConfirmacao = criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH);
+        
+        // 2º: Adicionando os campos criados ao painel
         blocoCentral.add(campoEmail);
         blocoCentral.add(campoNome);
         blocoCentral.add(campoSenha);
         blocoCentral.add(campoConfirmacao);
->>>>>>> Stashed changes
 
         JButton btnSeguir = new JButton("Seguir") {
             @Override
@@ -138,17 +114,17 @@ public class CadastroProf extends JFrame {
         btnSeguir.setBorder(null); 
         btnSeguir.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // LÓGICA DO BOTÃO TOTALMENTE ARRUMADA
+        // LÓGICA DO BOTÃO CORRIGIDA COM OS NOMES CERTOS DE VARIÁVEIS
         btnSeguir.addActionListener(e -> {
-            String email = txtEmail.getText();
-            String nome = txtNome.getText();
-            String senha = txtSenha.getText();
-            String confirma = txtConfirmarSenha.getText();
-            // Para o professor, como não tem dropdown no seu código ainda, vamos deixar uma disciplina padrão
-            String disciplina = "Geral"; 
+            String email = campoEmail.getText().trim();
+            String nome = campoNome.getText().trim();
+            String senha = campoSenha.getText().trim();
+            String confirma = campoConfirmacao.getText().trim();
 
-            // Validação
-            if (nome.equals("Inserir seu nome completo") || email.equals("Inserir email") || senha.isEmpty()) {
+            // Validação corrigida para checar se o usuário não deixou o placeholder
+            if (nome.isEmpty() || nome.equals("Inserir seu nome completo") || 
+                email.isEmpty() || email.equals("Inserir email") || 
+                senha.isEmpty() || confirma.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Preencha todos os campos corretamente!");
                 return;
             }
@@ -158,22 +134,10 @@ public class CadastroProf extends JFrame {
                 return;
             }
 
-<<<<<<< Updated upstream
-            // CRIANDO O OBJETO PROFESSOR
-            Professor novoProf = new Professor(nome, email, senha, disciplina);
-            
-            System.out.println("Professor Cadastrado: " + novoProf.getNome());
-            JOptionPane.showMessageDialog(null, "Cadastro de Professor realizado!");
-            
-            this.dispose();
-            new MenuProf().setVisible(true); 
-        });
-        
-=======
             // Criptografa a senha usando BCrypt
             String senhaHash = BCrypt.hashpw(senha, BCrypt.gensalt());
 
-            // 1. Instancia o modelo usando o caminho explícito para evitar conflitos de escopo
+            // 1. Instancia o modelo usando o caminho explícito
             Professor.ProfessorModel novoProf = new Professor.ProfessorModel(nome, email, senhaHash);
             
             // 2. Chama o DAO passando o modelo para salvar no banco
@@ -188,7 +152,6 @@ public class CadastroProf extends JFrame {
             }
         });
 
->>>>>>> Stashed changes
         blocoCentral.add(btnSeguir);
         painelFundo.add(blocoCentral);
 
@@ -243,7 +206,7 @@ public class CadastroProf extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(x, 0, 60, 60); 
-            b.addActionListener(e -> { this.dispose(); /* new SelecaoCadastro().setVisible(true); */ });
+            b.addActionListener(e -> { this.dispose(); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
@@ -257,10 +220,7 @@ public class CadastroProf extends JFrame {
         b.setContentAreaFilled(false);
         b.setBorderPainted(false);
         b.setFocusPainted(false);
-<<<<<<< Updated upstream
-=======
         b.setBorder(null); 
->>>>>>> Stashed changes
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         b.addMouseListener(new MouseAdapter() {

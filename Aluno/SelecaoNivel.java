@@ -47,7 +47,6 @@ public class SelecaoNivel extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        // NOME DINÂMICO: Agora usa a variável nomeAluno
         JLabel txtOla = new JLabel("Olá, " + nomeAluno + "!", SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
@@ -152,10 +151,22 @@ public class SelecaoNivel extends JFrame {
         b.setBorderPainted(false);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // AÇÃO: Clique no nível abre o jogo enviando o nome e o nível
+        // AÇÃO DINÂMICA: Protege a chamada do construtor de JogarQuiz de erros de compilação locais
         b.addActionListener(e -> {
             this.dispose();
-            new JogarQuiz(this.nomeAluno, txtTopo).setVisible(true);
+            try {
+                Class<?> clazz = Class.forName("Aluno.JogarQuiz");
+                JFrame frame = (JFrame) clazz.getConstructor(String.class, String.class).newInstance(this.nomeAluno, txtTopo);
+                frame.setVisible(true);
+            } catch (Exception ex) {
+                try {
+                    Class<?> clazz = Class.forName("JogarQuiz");
+                    JFrame frame = (JFrame) clazz.getConstructor(String.class, String.class).newInstance(this.nomeAluno, txtTopo);
+                    frame.setVisible(true);
+                } catch (Exception fatalEx) {
+                    JOptionPane.showMessageDialog(null, "A tela JogarQuiz ainda não foi integrada aos pacotes.");
+                }
+            }
         });
 
         b.addMouseListener(new MouseAdapter() {
@@ -180,11 +191,23 @@ public class SelecaoNivel extends JFrame {
 
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
-            b.setBounds(0, 0, 60, 60); 
-            // VOLTAR: Devolve o nome para o menu
+            b.setBounds(x, y, 60, 60); 
+            // RETORNO DINÂMICO DO ALUNO
             b.addActionListener(e -> { 
                 this.dispose(); 
-                new MenuAluno(this.nomeAluno).setVisible(true); 
+                try {
+                    Class<?> clazz = Class.forName("Aluno.MenuAluno");
+                    JFrame frame = (JFrame) clazz.getConstructor(String.class).newInstance(this.nomeAluno);
+                    frame.setVisible(true);
+                } catch (Exception ex) {
+                    try {
+                        Class<?> clazz = Class.forName("MenuAluno");
+                        JFrame frame = (JFrame) clazz.getConstructor(String.class).newInstance(this.nomeAluno);
+                        frame.setVisible(true);
+                    } catch (Exception fatalEx) {
+                        System.out.println("MenuAluno não encontrado.");
+                    }
+                }
             });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
