@@ -1,8 +1,5 @@
 package Cadastro;
-import javax.swing.*;
-
 import Professor.MenuProf;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.TextAttribute;
@@ -10,6 +7,14 @@ import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import org.mindrot.jbcrypt.BCrypt;
+import util.Conexao;
+import util.Sessao;
 
 public class CadastroProf extends JFrame {
 
@@ -80,10 +85,17 @@ public class CadastroProf extends JFrame {
         blocoCentral.add(txtTitulo);
 
         int startYCampos = centroY - 140;
-        blocoCentral.add(criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir seu nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH));
+        JTextField campoEmail = criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH);
+        JTextField campoNome = criarCampo("Inserir seu nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH);
+        JTextField campoSenha = criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH);
+        JTextField campoConfirmacao = criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH);
+        
+        
+        
+        blocoCentral.add(campoEmail);
+        blocoCentral.add(campoNome);
+        blocoCentral.add(campoSenha);
+        blocoCentral.add(campoConfirmacao);
 
         JButton btnSeguir = new JButton("Seguir") {
             @Override
@@ -105,9 +117,44 @@ public class CadastroProf extends JFrame {
         btnSeguir.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btnSeguir.addActionListener(e -> {
-            System.out.println("Professor Cadastrado!");
-            this.dispose();
-            new MenuProf().setVisible(true); 
+            String email = campoEmail.getText().trim();
+            String nome = campoNome.getText().trim();
+            String senha = campoSenha.getText().trim();
+            String confirmacao = campoConfirmacao.getText().trim();
+
+            if(email.isEmpty() || nome.isEmpty() || senha.isEmpty() || confirmacao.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Preencha todos os campos.");
+                return;
+            }
+
+            if(!senha.equals(confirmacao)) {
+                JOptionPane.showMessageDialog(null, "As senhas não coincidem");
+                return;
+            }
+
+            String senhaHash = BCrypt.hashpw(senha, BCrypt.gensalt());
+
+            try (Connection con = Conexao.conectar()) {
+                PreparedStatement stmt = con.prepareStatement (
+                    "INSERT INTO professor (nome_professor, email_professor, senha_professor) VALUES (?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS
+                );
+                stmt.setString(1, nome);
+                stmt.setString(2, email);
+                stmt.setString(3, senhaHash);
+                stmt.executeUpdate();
+
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    Sessao.idUsuario = rs.getInt(1);
+                    Sessao.tipoUsuario = "professor";
+                }
+
+                dispose();
+                new MenuProf().setVisible(true);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Erro ao cadastrar: " + ex.getMessage());
+            }
         });
         blocoCentral.add(btnSeguir);
 
