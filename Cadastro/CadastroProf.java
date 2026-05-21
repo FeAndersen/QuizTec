@@ -1,9 +1,12 @@
 package Cadastro;
 
+<<<<<<< Updated upstream
 import javax.swing.*;
 import Cadastro.modelo.Professor; 
 import Professor.MenuProf;
 
+=======
+>>>>>>> Stashed changes
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.TextAttribute;
@@ -11,12 +14,24 @@ import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+<<<<<<< Updated upstream
 
 public class CadastroProf extends JFrame {
 
     private Font fontTitulo, robotoSemiBold40, robotoRegular20;
     // DECLARANDO AS VARIÁVEIS DOS CAMPOS (Obrigatório para o Back-end)
     private JTextField txtEmail, txtNome, txtSenha, txtConfirmarSenha;
+=======
+import javax.swing.*;
+import org.mindrot.jbcrypt.BCrypt;
+
+public class CadastroProf extends JFrame {
+
+    // Declaração das fontes que o seu projeto usa
+    private Font fontTitulo;
+    private Font robotoSemiBold40;
+    private Font robotoRegular20;
+>>>>>>> Stashed changes
 
     public CadastroProf() {
         carregarFontes();
@@ -84,6 +99,7 @@ public class CadastroProf extends JFrame {
 
         int startYCampos = centroY - 140;
         
+<<<<<<< Updated upstream
         // INICIALIZANDO OS CAMPOS NAS VARIÁVEIS
         txtEmail = criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH);
         blocoCentral.add(txtEmail);
@@ -96,6 +112,12 @@ public class CadastroProf extends JFrame {
 
         txtConfirmarSenha = criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH);
         blocoCentral.add(txtConfirmarSenha);
+=======
+        blocoCentral.add(campoEmail);
+        blocoCentral.add(campoNome);
+        blocoCentral.add(campoSenha);
+        blocoCentral.add(campoConfirmacao);
+>>>>>>> Stashed changes
 
         JButton btnSeguir = new JButton("Seguir") {
             @Override
@@ -136,6 +158,7 @@ public class CadastroProf extends JFrame {
                 return;
             }
 
+<<<<<<< Updated upstream
             // CRIANDO O OBJETO PROFESSOR
             Professor novoProf = new Professor(nome, email, senha, disciplina);
             
@@ -146,6 +169,26 @@ public class CadastroProf extends JFrame {
             new MenuProf().setVisible(true); 
         });
         
+=======
+            // Criptografa a senha usando BCrypt
+            String senhaHash = BCrypt.hashpw(senha, BCrypt.gensalt());
+
+            // 1. Instancia o modelo usando o caminho explícito para evitar conflitos de escopo
+            Professor.ProfessorModel novoProf = new Professor.ProfessorModel(nome, email, senhaHash);
+            
+            // 2. Chama o DAO passando o modelo para salvar no banco
+            DAO.ProfessorDAO profDAO = new DAO.ProfessorDAO();
+            boolean sucesso = profDAO.cadastrar(novoProf);
+            
+            if (sucesso) {
+                dispose();
+                new Professor.MenuProf().setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(null, "Erro ao realizar o cadastro. Verifique a conexão.");
+            }
+        });
+
+>>>>>>> Stashed changes
         blocoCentral.add(btnSeguir);
         painelFundo.add(blocoCentral);
 
@@ -214,6 +257,10 @@ public class CadastroProf extends JFrame {
         b.setContentAreaFilled(false);
         b.setBorderPainted(false);
         b.setFocusPainted(false);
+<<<<<<< Updated upstream
+=======
+        b.setBorder(null); 
+>>>>>>> Stashed changes
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         b.addMouseListener(new MouseAdapter() {
