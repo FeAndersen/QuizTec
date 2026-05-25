@@ -1,6 +1,4 @@
 package Cadastro;
-import javax.swing.*;
-import javax.swing.plaf.basic.BasicComboBoxUI;
 import Aluno.MenuAluno;
 import java.awt.*;
 import java.awt.event.*;
@@ -8,11 +6,23 @@ import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.*;
+import javax.swing.plaf.basic.BasicComboBoxUI;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.LinkedHashMap;
+import org.mindrot.jbcrypt.BCrypt;
+import util.Conexao;
+import util.Sessao;
 
 public class CadastroAluno extends JFrame {
 
     private Font fontTitulo, robotoSemiBold40, robotoRegular20;
+    private LinkedHashMap<String, Integer> mapaTurmas = new LinkedHashMap<>();
 
     public CadastroAluno() {
         carregarFontes();
@@ -78,13 +88,21 @@ public class CadastroAluno extends JFrame {
         blocoCentral.add(txtTitulo);
 
         int startYCampos = centroY - 160;
-        blocoCentral.add(criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH));
-        blocoCentral.add(criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH));
-        blocoCentral.add(criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH));
         
-        // Aqui chamamos o novo dropdown polido
-        blocoCentral.add(criarDropdownTurma(fieldX, startYCampos + (fieldH + espacoY) * 4, fieldW, fieldH));
+        JTextField campoEmail = criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH);
+        JTextField campoNome = criarCampo("Inserir nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH);
+        JTextField campoSenha = criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH);
+        JTextField campoConfirmacao = criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH);
+        JComboBox<String> comboTurma = criarDropdownTurma(fieldX, startYCampos + (fieldH + espacoY) * 4, fieldW, fieldH);
+        
+        
+        
+        blocoCentral.add(campoEmail);
+        blocoCentral.add(campoNome);
+        blocoCentral.add(campoSenha);
+        blocoCentral.add(campoConfirmacao);
+        blocoCentral.add(comboTurma);
+        
 
         JButton btnSeguir = new JButton("Seguir") {
             @Override
@@ -106,10 +124,55 @@ public class CadastroAluno extends JFrame {
         btnSeguir.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btnSeguir.addActionListener(e -> {
-            System.out.println("Aluno Cadastrado!");
-            this.dispose();
-            new MenuAluno().setVisible(true); 
+            String email = campoEmail.getText().trim();
+            String nome = campoNome.getText().trim();
+            String senha = campoSenha.getText().trim();
+            String confirmacao = campoConfirmacao.getText().trim();
+            String turmaSelecionada = (String) comboTurma.getSelectedItem();
+
+
+            if (email.isEmpty() || nome.isEmpty() || senha.isEmpty() || confirmacao.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Preencha todos os campos.");
+                return;
+            }
+            if (turmaSelecionada == null || turmaSelecionada.equals("Selecionar Turma")) {
+                JOptionPane.showMessageDialog(null, "Selecione uma turma.");
+                return;
+            }
+            if (!senha.equals(confirmacao)) {
+                JOptionPane.showMessageDialog(null, "As senhas não coincidem.");
+                return;
+            }
+
+            String senhaHash = BCrypt.hashpw(senha, BCrypt.gensalt());
+            int idTurma = mapaTurmas.get(turmaSelecionada);
+
+            try (Connection con = Conexao.conectar()) {
+                PreparedStatement stmt = con.prepareStatement(
+                    "INSERT INTO aluno (nome_aluno, email_aluno, senha_aluno, id_turma) VALUES (?, ?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS
+                );
+                stmt.setString(1, nome);
+                stmt.setString(2, email);
+                stmt.setString(3, senhaHash);
+                stmt.setInt(4, idTurma);
+                stmt.executeUpdate();
+
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    Sessao.idUsuario = rs.getInt(1);
+                    Sessao.tipoUsuario = "aluno";
+                }
+
+                dispose();
+                new MenuAluno().setVisible(true);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Erro ao cadastrar: " + ex.getMessage());
+            }
         });
+        
+        
+        
         blocoCentral.add(btnSeguir);
 
         painelFundo.add(blocoCentral);
@@ -153,8 +216,26 @@ public class CadastroAluno extends JFrame {
     // MÉTODO ATUALIZADO: Dropdown de Turma
     // ==========================================
     private JComboBox<String> criarDropdownTurma(int x, int y, int w, int h) {
-        String[] turmas = {"Inserir turma", "1º Ano A", "1º Ano B", "1º Ano C", "1º Ano D", "2º Ano A", "3º Ano A"};
-        JComboBox<String> combo = new JComboBox<>(turmas);
+        try (Connection con = Conexao.conectar()) {
+            PreparedStatement stmt = con.prepareStatement(
+                "SELECT id_turma, serie, letra FROM turma ORDER BY serie, letra"
+            );
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String nomeTurma = rs.getInt("serie") + "º Ano " + rs.getString("letra");
+                mapaTurmas.put(nomeTurma, rs.getInt("id_turma"));
+            }
+        } catch (Exception ex) {
+            System.out.println("Erro ao carregar turmas: " + ex.getMessage());
+        }
+
+        String[] nomes = new String[mapaTurmas.size() + 1];
+        nomes[0] = "Selecionar Turma";
+        int i = 1;
+        for (String nome : mapaTurmas.keySet()) nomes[i++] = nome;
+
+
+        JComboBox<String> combo = new JComboBox<>(nomes);
         combo.setBounds(x, y, w, h);
         combo.setFont(robotoRegular20);
         combo.setBackground(new Color(220, 220, 220));
