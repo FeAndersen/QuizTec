@@ -1,11 +1,15 @@
 package Professor;
-import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
+import util.Conexao;
+import util.Sessao;
 
 public class SeusJogosCriados extends JFrame {
 
@@ -28,11 +32,35 @@ public class SeusJogosCriados extends JFrame {
         }
     }
     
-    // Lista global que guarda os jogos do professor (Simula uma tabela do BD)
-    public static List<Jogo> bancoDeJogos = new ArrayList<>();
+    
 
     public SeusJogosCriados() {
         carregarFontes();
+        List<Jogo> jogos = new ArrayList<>();
+        try (Connection con = Conexao.conectar()) {
+            PreparedStatement stmt = con.prepareStatement(
+                "SELECT s.nome_sessao, d.nome_dificuldade, s.data_criacao, s.quantidade_perguntas " +
+                "FROM sessao s " +
+                "JOIN dificuldade d ON s.id_dificuldade = d.id_dificuldade " +
+                "WHERE s.id_professor = ? " +
+                "ORDER BY s.data_criacao DESC"
+            );
+            
+            stmt.setInt(1, Sessao.idUsuario);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                jogos.add(new Jogo(
+                    rs.getString("nome_sessao"),
+                    rs.getString("nome_dificuldade"),
+                    rs.getDate("data_criacao").toString(),
+                    rs.getInt("quantidade_perguntas")
+                ));
+            }
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar jogos: " + ex.getMessage());
+        }
 
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -69,7 +97,7 @@ public class SeusJogosCriados extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, professor", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, " + Sessao.nomeUsuario, SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -101,7 +129,7 @@ public class SeusJogosCriados extends JFrame {
         lblTitulo.setBounds(0, 40, larguraCard, 40);
         cardPrincipal.add(lblTitulo);
 
-        JLabel lblSubtitulo = new JLabel("Você tem " + bancoDeJogos.size() + " jogos ativos no momento", SwingConstants.CENTER);
+        JLabel lblSubtitulo = new JLabel("Você tem " + jogos.size() + " jogos ativos no momento", SwingConstants.CENTER);
         lblSubtitulo.setForeground(Color.WHITE);
         lblSubtitulo.setFont(robotoBold24);
         lblSubtitulo.setBounds(0, 85, larguraCard, 30);
@@ -136,7 +164,7 @@ public class SeusJogosCriados extends JFrame {
         int espacoJogo = 15;
 
         // Loop que puxa os dados e cria os cards brancos
-        for (Jogo jogo : bancoDeJogos) {
+        for (Jogo jogo : jogos) {
             painelJogos.add(criarPainelJogo(jogo, 0, yJogo, wLista, hJogo));
             yJogo += hJogo + espacoJogo;
         }
@@ -341,12 +369,6 @@ public class SeusJogosCriados extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Mock rápido para testar a tela sozinha com dados variados
-        SeusJogosCriados.bancoDeJogos.add(new Jogo("Quiz de Vidrarias - 1º Ano A", "Fácil", "20/03/2026", 5));
-        SeusJogosCriados.bancoDeJogos.add(new Jogo("Quiz de Função - 1º Ano D", "Médio", "20/03/2026", 10));
-        SeusJogosCriados.bancoDeJogos.add(new Jogo("Quiz de Sistemas - 1º Ano A", "Difícil", "22/03/2026", 15));
-        SeusJogosCriados.bancoDeJogos.add(new Jogo("Quiz de Acidos - 2º Ano B", "Médio", "25/03/2026", 8));
-        
         SwingUtilities.invokeLater(() -> new SeusJogosCriados());
     }
 }
