@@ -1,23 +1,29 @@
 package Professor;
-import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import javax.swing.*;
+import util.Conexao;
+import util.Sessao;
 
 public class SeusAlunos extends JFrame {
 
     private Font robotoBold36, robotoBold24, robotoBold18, robotoBold14;
 
-    // ==========================================
-    // MOCK DATABASE (Banco de Dados Simulado)
-    // ==========================================
+ 
     public static class Aluno {
+        public int id;
         public String nome;
 
-        public Aluno(String nome) {
+
+        public Aluno(int id, String nome) {
+            this.id = id;
             this.nome = nome;
         }
     }
@@ -26,6 +32,26 @@ public class SeusAlunos extends JFrame {
 
     public SeusAlunos() {
         carregarFontes();
+
+        List<Aluno> alunos = new ArrayList<>();
+
+        try (Connection con = Conexao.conectar()) {
+            PreparedStatement stmt = con.prepareStatement(
+                "SELECT a.id_aluno, a.nome_aluno FROM aluno a " +
+                "JOIN turma t ON a.id_turma = t.id_turma " +
+                "WHERE t.id_professor = ? " +
+                "ORDER BY a.nome_aluno"
+            );
+
+            stmt.setInt(1, Sessao.idUsuario);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                alunos.add(new Aluno(rs.getInt("id_aluno"), rs.getString("nome_aluno")));
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar alunos: " + ex.getMessage());
+        }
 
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -61,7 +87,7 @@ public class SeusAlunos extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, professor", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, " + Sessao.nomeUsuario, SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -91,7 +117,7 @@ public class SeusAlunos extends JFrame {
         lblTitulo.setBounds(0, 40, larguraCard, 40);
         cardPrincipal.add(lblTitulo);
 
-        JLabel lblSubtitulo = new JLabel("Você tem " + bancoDeAlunos.size() + " alunos no QuizTec", SwingConstants.CENTER);
+        JLabel lblSubtitulo = new JLabel("Você tem " + alunos.size() + " alunos no QuizTec", SwingConstants.CENTER);
         lblSubtitulo.setForeground(Color.WHITE);
         lblSubtitulo.setFont(robotoBold24);
         lblSubtitulo.setBounds(0, 85, larguraCard, 30);
@@ -165,14 +191,14 @@ public class SeusAlunos extends JFrame {
 
         int maxY = 0; 
 
-        for (int i = 0; i < bancoDeAlunos.size(); i++) {
+        for (int i = 0; i < alunos.size(); i++) {
             int linhaAtual = i / 2; 
             int colunaAtual = i % 2; 
             
             int xAluno = colunaAtual * (wCard + espacoX);
             int yAluno = 10 + linhaAtual * (hCard + espacoY);
             
-            painelAlunos.add(criarPainelAluno(bancoDeAlunos.get(i), xAluno, yAluno, wCard, hCard));
+            painelAlunos.add(criarPainelAluno(alunos.get(i), xAluno, yAluno, wCard, hCard));
             
             maxY = yAluno + hCard + 20; 
         }
@@ -211,15 +237,158 @@ public class SeusAlunos extends JFrame {
     }
 
     private void abrirPopupAdicionarAluno() {
-        abrirPopup("Adicionar Novo Aluno", "Nome Completo do Aluno", true);
-    }
+        LinkedHashMap<String, Integer> mapaTurmas = new LinkedHashMap<>();
+        try (Connection con = Conexao.conectar()) {
+            PreparedStatement stmt = con.prepareStatement(
+                "SELECT id_turma, serie, letra FROM turma WHERE id_professor = ? ORDER BY serie, letra"
+            );
+            stmt.setInt(1, Sessao.idUsuario);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String nomeTurma = rs.getInt("serie") + "º Ano " + rs.getString("letra");
+                mapaTurmas.put(nomeTurma, rs.getInt("id_turma"));
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar turma: " + ex.getMessage());
+            return;
+        }
+        if (mapaTurmas.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Você não possui turmas cadastradas");
+            return;
+        }
+        JPanel glassPane = (JPanel) getGlassPane();
+        glassPane.removeAll();
 
-    private void abrirPopupRenomearAluno(String nomeAntigo) {
-        abrirPopup("Renomear Aluno", nomeAntigo, false);
+        int wPopup = 500;
+        int hPopup = 400;
+        int xPopup = (getWidth() - wPopup) / 2;
+        int yPopup = (getHeight() - hPopup) / 2;
+
+        JPanel popupCard = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(new Color(178, 0, 0));
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
+            g2.setColor(new Color(0, 0, 0, 50));
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 40, 40);
+            g2.dispose();
+        }
+    };
+
+        popupCard.setLayout(null);
+        popupCard.setBounds(xPopup, yPopup, wPopup, hPopup);
+        popupCard.setOpaque(false);
+
+        JButton btnFecharPopup = new JButton("X");
+        btnFecharPopup.setFont(new Font("Arial", Font.BOLD, 24));
+        btnFecharPopup.setForeground(Color.WHITE);
+        btnFecharPopup.setBounds(wPopup - 60, 20, 40, 40);
+        btnFecharPopup.setContentAreaFilled(false);
+        btnFecharPopup.setBorderPainted(false);
+        btnFecharPopup.setMargin(new Insets(0, 0, 0, 0));
+        btnFecharPopup.setBorder(null);
+        btnFecharPopup.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnFecharPopup.addActionListener(e -> glassPane.setVisible(false));
+        popupCard.add(btnFecharPopup);
+
+        JLabel lblTitulo = new JLabel("Adicionar Aluno", SwingConstants.CENTER);
+        lblTitulo.setFont(robotoBold24);
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setBounds(0, 50, wPopup, 40);
+        popupCard.add(lblTitulo);
+
+        JTextField txtEmail = new JTextField("Email do aluno");
+        txtEmail.setHorizontalAlignment(JTextField.CENTER);
+        txtEmail.setFont(robotoBold18);
+        txtEmail.setBackground(new Color(220, 220, 220));
+        txtEmail.setBounds((wPopup - 350) / 2, 110, 350, 45);
+        txtEmail.setBorder(null);
+        txtEmail.addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) { if (txtEmail.getText().equals("Email do aluno")) txtEmail.setText(""); }
+            public void focusLost(FocusEvent e) { if (txtEmail.getText().isEmpty()) txtEmail.setText("Email do aluno"); }
+        });
+        popupCard.add(txtEmail);
+
+        String[] nomesTurmas = new String[mapaTurmas.size() + 1];
+        nomesTurmas[0] = "Selecionar Turma";
+        int i = 1;
+        for (String nome : mapaTurmas.keySet()) nomesTurmas[i++] = nome;
+        JComboBox<String> comboTurma = new JComboBox<>(nomesTurmas);
+        comboTurma.setLightWeightPopupEnabled(false);
+        comboTurma.setFont(robotoBold18);
+        comboTurma.setBackground(new Color(220, 220, 220));
+        comboTurma.setBounds((wPopup - 350) / 2, 170, 350, 45);
+        popupCard.add(comboTurma);
+
+        JButton btnConfirmar = new JButton("Confirmar") {
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(new Color(30, 55, 90));
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+            super.paintComponent(g);
+        }
+    };
+        btnConfirmar.setFont(robotoBold24);
+        btnConfirmar.setForeground(Color.WHITE);
+        btnConfirmar.setBounds((wPopup - 250) / 2, 250, 250, 50);
+        btnConfirmar.setContentAreaFilled(false);
+        btnConfirmar.setBorderPainted(false);
+        btnConfirmar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+
+        btnConfirmar.addActionListener(e -> {
+            String email = txtEmail.getText().trim();
+            String turmaSelecionada = (String) comboTurma.getSelectedItem();
+
+            if (email.isEmpty() || email.equals("Email do aluno")) {
+                JOptionPane.showMessageDialog(null, "Insira o email do aluno");
+                return;
+            }
+            if (turmaSelecionada == null || turmaSelecionada.equals("Selecionar Turma")) {
+                JOptionPane.showMessageDialog(null, "Selecione uma turma");
+                return;
+            }
+
+            int idTurma = mapaTurmas.get(turmaSelecionada);
+
+            try (Connection con = Conexao.conectar()) {
+                PreparedStatement stmt = con.prepareStatement (
+                    "UPDATE aluno SET id_turma = ? WHERE email_aluno = ?"
+                );
+                stmt.setInt(1, idTurma);
+                stmt.setString(2, email);
+                int linhasAfetadas = stmt.executeUpdate();
+
+                if (linhasAfetadas == 0) {
+                    JOptionPane.showMessageDialog(null, "Nenhum aluno encontrado com esse email.");
+                    return;
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Erro ao adicionar aluno: " + ex.getMessage());
+                return;
+            }
+
+            glassPane.setVisible(false);
+            dispose();
+            new SeusAlunos().setVisible(true);
+        });
+
+        popupCard.add(btnConfirmar);
+        glassPane.add(popupCard);
+        glassPane.setVisible(true);
+            }
+        
+
+    private void abrirPopupRenomearAluno(Aluno aluno) {
+        abrirPopup("Renomear Aluno", aluno.nome, aluno.id, false);
     }
 
     // Função genérica que serve tanto para Adicionar quanto Renomear
-    private void abrirPopup(String titulo, String textoCampo, boolean isAdicionar) {
+    private void abrirPopup(String titulo, String textoCampo, int idAluno, boolean isAdicionar) {
         JPanel glassPane = (JPanel) getGlassPane();
         glassPane.removeAll();
 
@@ -240,6 +409,9 @@ public class SeusAlunos extends JFrame {
                 g2.dispose();
             }
         };
+
+
+
         popupCard.setLayout(null);
         popupCard.setBounds(xPopup, yPopup, wPopup, hPopup);
         popupCard.setOpaque(false);
@@ -297,20 +469,22 @@ public class SeusAlunos extends JFrame {
         btnConfirmar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btnConfirmar.addActionListener(e -> {
-            String nome = txtNomeAluno.getText();
-            if(!nome.isEmpty() && !nome.equals("Nome Completo do Aluno")) {
-                if (isAdicionar) {
-                    bancoDeAlunos.add(new Aluno(nome));
-                } else {
-                    for (Aluno a : bancoDeAlunos) {
-                        if (a.nome.equals(textoCampo)) { // Procura pelo nome antigo
-                            a.nome = nome; // Substitui pelo novo
-                            break;
-                        }
-                    }
+            String novoNome = txtNomeAluno.getText().trim();
+            if(!novoNome.isEmpty()) {
+                try (Connection con = Conexao.conectar()) {
+                    PreparedStatement stmt = con.prepareStatement(
+                        "UPDATE aluno SET nome_aluno = ? WHERE id_aluno = ?"
+                    );
+
+                    stmt.setString(1, novoNome);
+                    stmt.setInt(2, idAluno);
+                    stmt.executeUpdate();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao renomear: " + ex.getMessage());
                 }
+                
                 glassPane.setVisible(false);
-                this.dispose();
+                dispose();
                 new SeusAlunos().setVisible(true);
             }
         });
@@ -346,13 +520,13 @@ public class SeusAlunos extends JFrame {
         int btnH = h;
         int startXBtns = w - (btnW * 2) - 20;
 
-        p.add(criarBotaoAcao("Renomear", "images\\rename.png", startXBtns, 0, btnW, btnH));
-        p.add(criarBotaoAcao("Remover", "images\\person_remove.png", startXBtns + btnW, 0, btnW, btnH));
+        p.add(criarBotaoAcao("Renomear", "images\\rename.png", startXBtns, 0, btnW, btnH, aluno));
+        p.add(criarBotaoAcao("Remover", "images\\person_remove.png", startXBtns + btnW, 0, btnW, btnH, aluno));
 
         return p;
     }
 
-    private JButton criarBotaoAcao(String texto, String caminhoIcone, int x, int y, int w, int h) {
+    private JButton criarBotaoAcao(String texto, String caminhoIcone, int x, int y, int w, int h, Aluno aluno) {
         Color corAzulEscuro = new Color(30, 55, 90);
         Color corHover = new Color(240, 240, 240);
 
@@ -397,15 +571,22 @@ public class SeusAlunos extends JFrame {
         
         // Ações de Remover e Renomear
         b.addActionListener(e -> {
-            String nomeProcurado = ((JLabel)b.getParent().getComponent(0)).getText();
-            
             if(texto.equals("Remover")) {
-                bancoDeAlunos.removeIf(a -> a.nome.equals(nomeProcurado));
-                SwingUtilities.getWindowAncestor(b).dispose();
+                try (Connection con = Conexao.conectar()) {
+                    PreparedStatement stmt = con.prepareStatement(
+                        "DELETE FROM aluno WHERE id_aluno = ?"
+                    );
+                    stmt.setInt(1, aluno.id);
+                    stmt.executeUpdate();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao remover: " + ex.getMessage());
+                    return;
+                }
+                dispose();
                 new SeusAlunos().setVisible(true);
             } 
             else if(texto.equals("Renomear")) {
-                abrirPopupRenomearAluno(nomeProcurado); // Abre o modal para digitar o novo nome
+                abrirPopupRenomearAluno(aluno); 
             }
         });
 
@@ -476,9 +657,6 @@ public class SeusAlunos extends JFrame {
     }
 
     public static void main(String[] args) {
-        if (SeusAlunos.bancoDeAlunos.isEmpty()) {
-            SeusAlunos.bancoDeAlunos.add(new Aluno("Luan Silva Oliveira"));
-        }
         SwingUtilities.invokeLater(() -> new SeusAlunos());
     }
 }

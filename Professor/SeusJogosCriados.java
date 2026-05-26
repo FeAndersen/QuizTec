@@ -15,9 +15,7 @@ public class SeusJogosCriados extends JFrame {
 
     private Font robotoBold36, robotoBold24, robotoBold14;
 
-    // ==========================================
-    // MOCK DATABASE (Banco de Dados Simulado)
-    // ==========================================
+
     public static class Jogo {
         public String nome;
         public String nivel;
