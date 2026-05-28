@@ -1,140 +1,187 @@
 package Aluno;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Path2D;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.*;
+import util.Conexao;
+import util.Sessao;
 
 public class EscolherJogoAluno extends JFrame {
 
     private Font robotoBold36, robotoBold24, robotoBold18, robotoBold14;
-    private String nomeAluno; // Armazena o nome do aluno logado
+    static class Jogo {
+        public int id;
+        public String nome;
+        public String dataCriacao;
 
-    public EscolherJogoAluno(String nome) {
-        this.nomeAluno = nome; // Recebe o nome do menu
-        carregarFontes();
-        setUndecorated(true);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        Toolkit tk = Toolkit.getDefaultToolkit();
-        int larguraTela = (int) tk.getScreenSize().getWidth();
-        int alturaTela = (int) tk.getScreenSize().getHeight();
-
-        JPanel painelFundo = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.drawImage(new ImageIcon("images\\fundo_etec.jpg").getImage(), 0, 0, getWidth(), getHeight(), this);
-            }
-        };
-        painelFundo.setLayout(null);
-        setContentPane(painelFundo);
-
-        JPanel header = new JPanel();
-        header.setBackground(new Color(178, 0, 0));
-        header.setBounds(0, 0, larguraTela, 80);
-        header.setLayout(null);
-
-        header.add(criarBotaoControle("X", larguraTela - 50, 0));
-        header.add(criarBotaoControle("-", larguraTela - 100, 0));
-        header.add(criarBotaoControle("↰", 0, 0));
-
-        JLabel txtQuizTec = new JLabel("QuizTec");
-        txtQuizTec.setForeground(Color.WHITE);
-        txtQuizTec.setFont(robotoBold36);
-        txtQuizTec.setBounds(110, 0, 200, 80);
-        header.add(txtQuizTec);
-
-        JLabel txtOla = new JLabel("Olá, " + nomeAluno, SwingConstants.RIGHT); // Agora exibe o nome real
-        txtOla.setForeground(Color.WHITE);
-        txtOla.setFont(robotoBold24);
-        txtOla.setBounds(larguraTela - 450, 0, 300, 80);
-        header.add(txtOla);
-
-        int larguraCard = (int) (larguraTela * 0.85);
-        int alturaCard = (int) (alturaTela * 0.85);
-        int xCard = (larguraTela - larguraCard) / 2;
-        int yCard = 100;
-
-        JPanel cardPrincipal = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(178, 0, 0));
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 80, 80);
-            }
-        };
-        cardPrincipal.setLayout(null);
-        cardPrincipal.setOpaque(false);
-        cardPrincipal.setBounds(xCard, yCard, larguraCard, alturaCard);
-
-        JLabel lblTitulo = new JLabel("Jogos de identificação", SwingConstants.CENTER);
-        lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setFont(robotoBold36);
-        lblTitulo.setBounds(0, 40, larguraCard, 40);
-        cardPrincipal.add(lblTitulo);
-
-        JLabel lblSubtitulo = new JLabel("Você tem acesso a 4 jogos de nível fácil", SwingConstants.CENTER);
-        lblSubtitulo.setForeground(Color.WHITE);
-        lblSubtitulo.setFont(robotoBold24);
-        lblSubtitulo.setBounds(0, 85, larguraCard, 30);
-        cardPrincipal.add(lblSubtitulo);
-
-        JPanel linha = new JPanel() {
-            @Override protected void paintComponent(Graphics g) {
-                g.setColor(Color.WHITE); g.fillRect(0, 0, getWidth(), getHeight());
-            }
-        };
-        linha.setBounds((larguraCard - 800)/2, 130, 800, 3);
-        linha.setOpaque(false);
-        cardPrincipal.add(linha);
-
-        int wLista = (int) (larguraCard * 0.85);
-        int hLista = alturaCard - 180;
-        int xLista = (larguraCard - wLista) / 2;
-
-        JPanel painelJogos = new JPanel();
-        painelJogos.setLayout(null); 
-        painelJogos.setOpaque(false);
-        painelJogos.setBackground(new Color(0,0,0,0));
-
-        int yJogo = 10;
-        int hJogo = 80;
-        int espacoJogo = 15;
-
-        String[] nomesJogos = {"Quiz de Vidrarias - 1º Ano A", "Quiz de Função - 1º Ano A", "Quiz de Função - 1º Ano A", "Quiz de Sistemas - 1º Ano A"};
-        String[] icones = {
-            "images\\labs.png", 
-            "images\\labs.png", 
-            "images\\labs.png", 
-            "images\\labs.png"
-        };
-
-        for (int i = 0; i < nomesJogos.length; i++) {
-            painelJogos.add(criarPainelJogoAluno(nomesJogos[i], icones[i], 0, yJogo, wLista, hJogo));
-            yJogo += hJogo + espacoJogo;
+        public Jogo(int id, String nome, String dataCriacao) {
+            this.id = id;
+            this.nome = nome;
+            this.dataCriacao = dataCriacao;
         }
-
-        painelJogos.setPreferredSize(new Dimension(wLista, yJogo));
-
-        JScrollPane scrollPane = new JScrollPane(painelJogos);
-        scrollPane.setBounds(xLista, 150, wLista, hLista);
-        scrollPane.setOpaque(false);
-        scrollPane.getViewport().setOpaque(false);
-        scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16); 
-        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0,0)); 
-        
-        cardPrincipal.add(scrollPane);
-        painelFundo.add(header);
-        painelFundo.add(cardPrincipal);
-
-        setVisible(true);
     }
 
-    private JPanel criarPainelJogoAluno(String nomeJogo, String iconePath, int x, int y, int w, int h) {
+    public EscolherJogoAluno(String nivel) {
+       carregarFontes();
+
+       String nomeDificuldadeDB;
+       String nomeIcone;
+       String nomeTitulo;
+
+       switch (nivel) {
+        case "Médio": nomeDificuldadeDB = "MEDIO"; nomeIcone = "images\\biotech.png"; nomeTitulo = "Jogos de funções"; break;
+        case "Difícil": nomeDificuldadeDB = "DIFICIL"; nomeIcone = "images\\fluid_med.png"; nomeTitulo = "Jogos de sistemas"; break;
+        default: nomeDificuldadeDB = "FACIL"; nomeIcone = "images\\labs.png"; nomeTitulo = "Jogos de identificação"; break;
+       }
+
+       java.util.List<Jogo> jogos = new java.util.ArrayList<>();
+
+       try (Connection con = Conexao.conectar()) {
+        PreparedStatement stmt = con.prepareStatement(
+            "SELECT s.id_sessao, s.nome_sessao, s.data_criacao " +
+            "FROM sessao s " +
+            "JOIN dificuldade d USING(id_dificuldade) " +
+            "JOIN turma t USING(id_professor) " +
+            "JOIN aluno a USING(id_turma) " +
+            "WHERE a.id_aluno = ? AND d.nome_dificuldade = ? " +
+            "ORDER BY s.data_criacao DESC"
+        );
+
+        stmt.setInt(1, Sessao.idUsuario);
+        stmt.setString(2, nomeDificuldadeDB);
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            jogos.add(new Jogo(
+                rs.getInt("id_sessao"),
+                rs.getString("nome_sessao"),
+                rs.getDate("data_criacao").toString()
+            ));
+        }
+       } catch (Exception ex) {
+        JOptionPane.showMessageDialog(null, "Erro ao carregar jogos: " + ex.getMessage());
+       }
+
+
+       setUndecorated(true);
+    setExtendedState(JFrame.MAXIMIZED_BOTH);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+    Toolkit tk = Toolkit.getDefaultToolkit();
+    int larguraTela = (int) tk.getScreenSize().getWidth();
+    int alturaTela = (int) tk.getScreenSize().getHeight();
+
+    JPanel painelFundo = new JPanel() {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            g.drawImage(new ImageIcon("images\\fundo_etec.jpg").getImage(), 0, 0, getWidth(), getHeight(), this);
+        }
+    };
+    painelFundo.setLayout(null);
+    setContentPane(painelFundo);
+
+    JPanel header = new JPanel();
+    header.setBackground(new Color(178, 0, 0));
+    header.setBounds(0, 0, larguraTela, 80);
+    header.setLayout(null);
+
+    header.add(criarBotaoControle("X", larguraTela - 50, 0));
+    header.add(criarBotaoControle("-", larguraTela - 100, 0));
+    header.add(criarBotaoControle("↰", 0, 0));
+
+    JLabel txtQuizTec = new JLabel("QuizTec");
+    txtQuizTec.setForeground(Color.WHITE);
+    txtQuizTec.setFont(robotoBold36);
+    txtQuizTec.setBounds(110, 0, 200, 80);
+    header.add(txtQuizTec);
+
+    JLabel txtOla = new JLabel("Olá, " + Sessao.nomeUsuario, SwingConstants.RIGHT);
+    txtOla.setForeground(Color.WHITE);
+    txtOla.setFont(robotoBold24);
+    txtOla.setBounds(larguraTela - 450, 0, 300, 80);
+    header.add(txtOla);
+
+    int larguraCard = (int) (larguraTela * 0.85);
+    int alturaCard = (int) (alturaTela * 0.85);
+    int xCard = (larguraTela - larguraCard) / 2;
+    int yCard = 100;
+
+    JPanel cardPrincipal = new JPanel() {
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(new Color(178, 0, 0));
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 80, 80);
+        }
+    };
+    cardPrincipal.setLayout(null);
+    cardPrincipal.setOpaque(false);
+    cardPrincipal.setBounds(xCard, yCard, larguraCard, alturaCard);
+
+    JLabel lblTitulo = new JLabel(nomeTitulo, SwingConstants.CENTER);
+    lblTitulo.setForeground(Color.WHITE);
+    lblTitulo.setFont(robotoBold36);
+    lblTitulo.setBounds(0, 40, larguraCard, 40);
+    cardPrincipal.add(lblTitulo);
+
+    JLabel lblSubtitulo = new JLabel("Você tem acesso a " + jogos.size() + " jogos de nível " + nivel.toLowerCase(), SwingConstants.CENTER);
+    lblSubtitulo.setForeground(Color.WHITE);
+    lblSubtitulo.setFont(robotoBold24);
+    lblSubtitulo.setBounds(0, 85, larguraCard, 30);
+    cardPrincipal.add(lblSubtitulo);
+
+    JPanel linha = new JPanel() {
+        @Override protected void paintComponent(Graphics g) {
+            g.setColor(Color.WHITE); g.fillRect(0, 0, getWidth(), getHeight());
+        }
+    };
+    linha.setBounds((larguraCard - 800)/2, 130, 800, 3);
+    linha.setOpaque(false);
+    cardPrincipal.add(linha);
+
+    int wLista = (int) (larguraCard * 0.85);
+    int hLista = alturaCard - 180;
+    int xLista = (larguraCard - wLista) / 2;
+
+    JPanel painelJogos = new JPanel();
+    painelJogos.setLayout(null);
+    painelJogos.setOpaque(false);
+    painelJogos.setBackground(new Color(0,0,0,0));
+
+    int yJogo = 10;
+    int hJogo = 80;
+    int espacoJogo = 15;
+
+    for (Jogo jogo : jogos) {
+        painelJogos.add(criarPainelJogoAluno(jogo, nomeIcone, 0, yJogo, wLista, hJogo));
+        yJogo += hJogo + espacoJogo;
+    }
+
+    painelJogos.setPreferredSize(new Dimension(wLista, yJogo));
+
+    JScrollPane scrollPane = new JScrollPane(painelJogos);
+    scrollPane.setBounds(xLista, 150, wLista, hLista);
+    scrollPane.setOpaque(false);
+    scrollPane.getViewport().setOpaque(false);
+    scrollPane.setBorder(null);
+    scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+    scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0,0));
+
+    cardPrincipal.add(scrollPane);
+    painelFundo.add(header);
+    painelFundo.add(cardPrincipal);
+
+    setVisible(true);
+
+    }
+
+    private JPanel criarPainelJogoAluno(Jogo jogo, String iconePath, int x, int y, int w, int h) {
         Color corAzulEscuro = new Color(30, 55, 90);
 
         JPanel p = new JPanel() {
@@ -152,13 +199,13 @@ public class EscolherJogoAluno extends JFrame {
         p.setBounds(x, y, w, h);
         p.setOpaque(false);
 
-        JLabel lblNome = new JLabel(nomeJogo);
+        JLabel lblNome = new JLabel(jogo.nome);
         lblNome.setFont(robotoBold24);
         lblNome.setForeground(corAzulEscuro);
         lblNome.setBounds(100, 15, w - 300, 30);
         p.add(lblNome);
 
-        JLabel lblData = new JLabel("Criado em 20/03/2026");
+        JLabel lblData = new JLabel("Criado em: " + jogo.dataCriacao);
         lblData.setFont(robotoBold14);
         lblData.setForeground(corAzulEscuro);
         lblData.setBounds(100, 45, w - 300, 20);
@@ -201,6 +248,11 @@ public class EscolherJogoAluno extends JFrame {
             @Override public void mouseExited(MouseEvent e) { btnJogar.setBackground(corAzulEscuro); btnJogar.repaint(); }
         });
         
+        btnJogar.addActionListener(e -> {
+            Sessao.idSessao = jogo.id;
+            dispose();
+            new JogarQuiz().setVisible(true);
+        });
 
         p.add(btnJogar);
         return p;
@@ -218,7 +270,7 @@ public class EscolherJogoAluno extends JFrame {
             b.setBounds(x, 0, 60, 60);
             b.addActionListener(e -> { 
                 this.dispose(); 
-                new MenuAluno().setVisible(true); // Volta passando o nome
+                new SelecaoNivel().setVisible(true); // Volta passando o nome
             });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
