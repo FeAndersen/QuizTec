@@ -1,12 +1,11 @@
 package Aluno;
 
-import javax.swing.*;
-
 import Cadastro.Login;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import javax.swing.*;
+import util.Sessao;
 
 public class MenuAluno extends JFrame {
 
@@ -165,6 +164,10 @@ public class MenuAluno extends JFrame {
                 this.dispose(); 
                 new SelecaoNivel().setVisible(true); 
             }
+            else if (idAcao == 2) {
+                this.dispose();
+                new HistoricoAluno(Sessao.nomeUsuario).setVisible(true);
+            }
             else if (idAcao == 3) { 
                 this.dispose(); 
                 new Login().setVisible(true); 
@@ -180,7 +183,7 @@ public class MenuAluno extends JFrame {
     }
 
     private JButton criarBotaoControle(String texto, int x, int y) {
-        Color corInvisivel = new Color(178, 0, 0); 
+        Color corInvisivel = new Color(0, 0, 0, 0); 
         Color corHover = texto.equals("X") ? new Color(232, 17, 35) : new Color(100, 100, 100);
 
         JButton b = new JButton(texto) {
