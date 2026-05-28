@@ -1,8 +1,9 @@
 package Aluno;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import javax.swing.*;
+import util.Sessao;
 
 public class SelecaoNivel extends JFrame {
 
@@ -45,7 +46,7 @@ public class SelecaoNivel extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, Aluno!", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, " + Sessao.nomeUsuario + "!", SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -161,8 +162,15 @@ public class SelecaoNivel extends JFrame {
             @Override public void mouseEntered(MouseEvent e) { b.setBackground(new Color(240, 240, 240)); b.repaint(); }
             @Override public void mouseExited(MouseEvent e) { b.setBackground(Color.WHITE); b.repaint(); }
         });
+        
+        b.addActionListener(e -> {
+        this.dispose();
+        new EscolherJogoAluno(txtTopo).setVisible(true);
+        });
         return b;
     }
+
+    
 
     private JButton criarBotaoControle(String texto, int x, int y) {
         Color corInvisivel = new Color(0, 0, 0, 0); 
@@ -180,7 +188,7 @@ public class SelecaoNivel extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(0, 0, 60, 60); 
-            b.addActionListener(e -> { this.dispose(); new MenuAluno().setVisible(true); });
+            b.addActionListener(e -> { this.dispose(); new MenuAluno(Sessao.nomeUsuario).setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 
