@@ -1,13 +1,19 @@
 package Professor;
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Path2D;
 import java.io.File;
+import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import util.Conexao;
+import util.Sessao;
 
 public class CriarPerguntas extends JFrame {
 
@@ -75,7 +81,7 @@ public class CriarPerguntas extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, professor", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, " + Sessao.nomeUsuario, SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -318,14 +324,134 @@ public class CriarPerguntas extends JFrame {
         btnConfirmar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btnConfirmar.addActionListener(e -> {
-            String nomeJogo = txtNomeJogo.getText();
-            System.out.println("====== JOGO SALVO ======");
-            System.out.println("Nome: " + nomeJogo);
-            System.out.println("Nível de Dificuldade: " + nivelDificuldade); // <--- AQUI EXIBIMOS O DADO QUE VIAJOU
-            System.out.println("Total de Perguntas: " + listaPerguntas.size());
-            
-            glassPane.setVisible(false);
-            JOptionPane.showMessageDialog(this, "Jogo salvo com sucesso!\nNível: " + nivelDificuldade);
+            String nomeJogo = txtNomeJogo.getText().trim();
+
+            if (nomeJogo.isEmpty() || nomeJogo.equals("Inserir nome")) {
+                JOptionPane.showMessageDialog(null, "Insira um nome para o jogo");
+                return;
+            }
+
+            for (int i = 0; i < listaPerguntas.size(); i++) {
+                Pergunta p = listaPerguntas.get(i);
+                if (p.enunciado.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Pergunta " + (i + 1) + " está sem enunciado");
+                    return;
+                }
+                if (p.correta == -1) {
+                    JOptionPane.showMessageDialog(null, "Pergunta " + (i + 1) + " não tem resposta correta marcada");
+                    return;
+                }
+                for (int j = 0; j < 4; j++) {
+                    if (p.alternativas[j].isEmpty()){
+                        JOptionPane.showMessageDialog(null, "Pergunta " + (i + 1) + ": alternativa " + (char)('A' + j) + " está vazia");
+                        return;
+                    }
+                }
+            }
+
+            String nomeDificuldadeDB;
+            String tipoPergunta;
+            switch (nivelDificuldade) {
+                case "Médio": nomeDificuldadeDB = "MEDIO"; tipoPergunta = "material_funcao"; break;
+                case "Difícil": nomeDificuldadeDB = "DIFICIL"; tipoPergunta = "material_sistema"; break;
+                default: nomeDificuldadeDB = "FACIL"; tipoPergunta = "identificacao"; break;
+            }
+
+            try (Connection con = Conexao.conectar()) {
+                PreparedStatement stmtDif = con.prepareStatement(
+                    "SELECT id_dificuldade FROM dificuldade WHERE nome_dificuldade = ?"
+                );
+                stmtDif.setString(1, nomeDificuldadeDB);
+                ResultSet rsDif = stmtDif.executeQuery();
+
+                if (!rsDif.next()) {
+                    JOptionPane.showMessageDialog(null, "Nível de dificuldade não encontrado no banco");
+                    return;
+                }
+
+                int idDificuldade = rsDif.getInt("id_dificuldade");
+
+                PreparedStatement stmtSessao = con.prepareStatement (
+                    "INSERT INTO sessao (nome_sessao, quantidade_perguntas, id_professor, id_dificuldade) VALUES (?, ?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS
+                );
+                stmtSessao.setString(1, nomeJogo);
+                stmtSessao.setInt(2, listaPerguntas.size());
+                stmtSessao.setInt(3, Sessao.idUsuario);
+                stmtSessao.setInt(4, idDificuldade);
+                stmtSessao.executeUpdate();
+
+                ResultSet rsSessao = stmtSessao.getGeneratedKeys();
+                rsSessao.next();
+                int idSessao = rsSessao.getInt(1);
+
+                for (Pergunta p : listaPerguntas) {
+                    Integer idImagem = null;
+                    if (!p.fotoCaminho.isEmpty()) {
+                        File imgFile = new File(p.fotoCaminho);
+                        String nomeArquivo = imgFile.getName();
+                        String extensao = nomeArquivo.substring(nomeArquivo.lastIndexOf('.') + 1).toLowerCase();
+                        byte[] imgBytes = Files.readAllBytes(imgFile.toPath());
+
+                        PreparedStatement stmtImg = con.prepareStatement(
+                            "INSERT INTO imagem (arquivo_imagem, tipo_imagem, nome_imagem) VALUES (?, ?, ?)",
+                            Statement.RETURN_GENERATED_KEYS
+                        );
+                        stmtImg.setBytes(1, imgBytes);
+                        stmtImg.setString(2, extensao);
+                        stmtImg.setString(3, nomeArquivo.length() > 30 ? nomeArquivo.substring(0, 30) : nomeArquivo);
+                        stmtImg.executeUpdate();
+
+                        ResultSet rsImg = stmtImg.getGeneratedKeys();
+                        rsImg.next();
+                        idImagem = rsImg.getInt(1);
+                    }
+
+
+
+                    PreparedStatement stmtPerg = con.prepareStatement(
+                        "INSERT INTO pergunta (enunciado, tipo_pergunta, pontuacao, id_imagem) VALUES (?, ?, ?, ?)",
+                        Statement.RETURN_GENERATED_KEYS               
+                    );
+                    stmtPerg.setString(1, p.enunciado);
+                    stmtPerg.setString(2, tipoPergunta);
+                    stmtPerg.setInt(3, 10);
+                    if (idImagem != null) {
+                        stmtPerg.setInt(4, idImagem);
+                    } else {
+                        stmtPerg.setNull(4, java.sql.Types.INTEGER);
+                    }
+                    stmtPerg.executeUpdate();
+
+                    ResultSet rsPerg = stmtPerg.getGeneratedKeys();
+                    rsPerg.next();
+                    int idPergunta = rsPerg.getInt(1);
+
+                    for (int i = 0; i < 4; i++) {
+                        PreparedStatement stmtAlt = con.prepareStatement(
+                            "INSERT INTO alternativa (resposta, tipo_alternativa, correta, id_pergunta) VALUES (?, 'texto', ?, ?)"
+                        );
+                        stmtAlt.setString(1, p.alternativas[i]);
+                        stmtAlt.setBoolean(2, i == p.correta);
+                        stmtAlt.setInt(3, idPergunta);
+                        stmtAlt.executeUpdate();
+                    }
+
+                    PreparedStatement stmtPS = con.prepareStatement(
+                        "INSERT INTO perguntas_sessao (id_sessao, id_pergunta) VALUES (?, ?)"
+                    );
+                    stmtPS.setInt(1, idSessao);
+                    stmtPS.setInt(2, idPergunta);
+                    stmtPS.executeUpdate();
+                }
+
+                glassPane.setVisible(false);
+                JOptionPane.showMessageDialog(null, "Jogo \"" + nomeJogo + "\" salvo com sucesso!");
+                dispose();
+                new MenuProf().setVisible(true);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Erro ao salvar: " + ex.getMessage());
+            }
         });
         
         popupCard.add(btnConfirmar);

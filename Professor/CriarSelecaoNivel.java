@@ -1,9 +1,9 @@
 package Professor;
-import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import javax.swing.*;
+import util.Sessao;
 
 public class CriarSelecaoNivel extends JFrame {
 
@@ -47,7 +47,7 @@ public class CriarSelecaoNivel extends JFrame {
         header.add(txtQuizTec);
 
         // Atualizado para o Professor
-        JLabel txtOla = new JLabel("Olá, professor", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, " + Sessao.nomeUsuario, SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
