@@ -1,0 +1,11 @@
+package util;
+import java.sql.*;
+public class Conexao {
+    private static final String URL = "SEU URL";
+    private static final String USUARIO = "SEU_USUARIO";
+    private static final String SENHA = "SUA_SENHA";
+    public static Connection conectar() {
+        try { return DriverManager.getConnection(URL, USUARIO, SENHA); }
+        catch (SQLException e) { System.out.println("Erro: " + e.getMessage()); return null; }
+    }
+}

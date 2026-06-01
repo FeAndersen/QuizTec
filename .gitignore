@@ -8,3 +8,5 @@ Desktop.ini
 # Pasta de saída se criar uma no futuro
 out/
 build/
+
+util/Conexao.java
