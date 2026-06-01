@@ -1,8 +1,12 @@
 package Aluno;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import javax.swing.*;
+import util.Conexao;
+import util.Sessao;
 
 public class ResultadoQuiz extends JFrame {
 
@@ -10,6 +14,18 @@ public class ResultadoQuiz extends JFrame {
 
     public ResultadoQuiz(int acertos, int total) {
         carregarFontes();
+        try (Connection con = Conexao.conectar()) {
+            PreparedStatement stmt = con.prepareStatement(
+                "INSERT INTO partida (id_aluno, id_sessao, pontuacao_total, data_hora_fim, status_partida) " +
+                "VALUES (?, ?, ?, NOW(), 'finalizado')" 
+            );
+            stmt.setInt(1, Sessao.idUsuario);
+            stmt.setInt(2, Sessao.idSessao);
+            stmt.setInt(3, acertos * 10);
+            stmt.executeUpdate();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Erro ao salvar resultado: " + ex.getMessage());
+        }
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -45,7 +61,7 @@ public class ResultadoQuiz extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, Aluno", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, " + Sessao.nomeUsuario, SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
@@ -182,7 +198,7 @@ public class ResultadoQuiz extends JFrame {
             if (isRefresh) {
                 new JogarQuiz().setVisible(true); // Reinicia o jogo
             } else {
-                new MenuAluno().setVisible(true); // Volta pro menu
+                new MenuAluno(Sessao.nomeUsuario).setVisible(true); // Volta pro menu
             }
         });
 
@@ -200,7 +216,7 @@ public class ResultadoQuiz extends JFrame {
         if (texto.equals("↰")) {
             b.setFont(new Font("Segoe UI Symbol", Font.BOLD, 48));
             b.setBounds(x, 0, 60, 60); // REGRA APLICADA: 60x60 cravado
-            b.addActionListener(e -> { this.dispose(); new MenuAluno().setVisible(true); });
+            b.addActionListener(e -> { this.dispose(); new MenuAluno(Sessao.nomeUsuario).setVisible(true); });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
             b.setBounds(x, y, 50, 40); 

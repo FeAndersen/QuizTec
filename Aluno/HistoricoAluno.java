@@ -1,8 +1,8 @@
 package Aluno;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import javax.swing.*;
 
 public class HistoricoAluno extends JFrame {
 
