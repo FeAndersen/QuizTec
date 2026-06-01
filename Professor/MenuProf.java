@@ -1,11 +1,10 @@
 package Professor;
-import javax.swing.*;
-
 import Cadastro.Login;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import javax.swing.*;
+import util.Sessao;
 
 public class MenuProf extends JFrame {
 
@@ -51,7 +50,7 @@ public class MenuProf extends JFrame {
         txtQuizTec.setBounds(110, 0, 200, 80);
         header.add(txtQuizTec);
 
-        JLabel txtOla = new JLabel("Olá, professor", SwingConstants.RIGHT);
+        JLabel txtOla = new JLabel("Olá, " + Sessao.nomeUsuario, SwingConstants.RIGHT);
         txtOla.setForeground(Color.WHITE);
         txtOla.setFont(robotoBold24);
         txtOla.setBounds(larguraTela - 450, 0, 300, 80);
