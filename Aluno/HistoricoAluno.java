@@ -2,12 +2,38 @@ package Aluno;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
+import util.Conexao;
+import util.Sessao;
+
+
+
 
 public class HistoricoAluno extends JFrame {
 
     private Font robotoBold36, robotoBold24, robotoBold14, robotoBold10;
     private String nomeAluno; // Armazena o nome do aluno logado
+
+    static class Partida {
+    String nomeJogo;
+    String nivel;
+    int pontuacaoTotal;
+    int totalPerguntas;
+    String dataHoraFim;
+
+    Partida(String nomeJogo, String nivel, int pontuacaoTotal, int totalPerguntas, String dataHoraFim) {
+        this.nomeJogo = nomeJogo;
+        this.nivel = nivel;
+        this.pontuacaoTotal = pontuacaoTotal;
+        this.totalPerguntas = totalPerguntas;
+        this.dataHoraFim = dataHoraFim;
+    }
+    }
 
     public HistoricoAluno(String nome) {
         this.nomeAluno = nome;
@@ -105,14 +131,44 @@ public class HistoricoAluno extends JFrame {
         int hItem = 80;
         int espacoItem = 15;
 
-        // Dados simulados (No futuro, você buscará isso do banco usando o nomeAluno)
-        String[] nomesJogos = {"Quiz de Vidrarias - 1º Ano A", "Quiz de Função - 1º Ano D", "Quiz de Vidrarias - 1º Ano A", "Quiz de Sistemas - 1º Ano D"};
-        String[] icones = {"images\\labs.png", "images\\biotech.png", "images\\biotech.png", "images\\fluid_med.png"};
-        int[] acertosArr = {9, 9, 9, 9};
-        int[] ptsArr = {1933, 1933, 1933, 1933};
+        List<Partida> partidas = new ArrayList<>();
 
-        for (int i = 0; i < nomesJogos.length; i++) {
-            painelHistorico.add(criarItemHistorico(nomesJogos[i], icones[i], acertosArr[i], ptsArr[i], 0, yItem, wLista, hItem));
+        try (Connection con = Conexao.conectar()) {
+            PreparedStatement stmt = con.prepareStatement(
+                "SELECT s.nome_sessao, d.nome_dificuldade, p.pontuacao_total, s.quantidade_perguntas, p.data_hora_fim " +
+                "FROM partida p " +
+                "JOIN sessao s USING(id_sessao) " +
+                "JOIN dificuldade d USING(id_dificuldade) " +
+                "WHERE p.id_aluno = ? AND p.status_partida = 'finalizado' " +
+                "ORDER BY p.data_hora_fim DESC"
+            );
+            stmt.setInt(1, Sessao.idUsuario);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                partidas.add(new Partida(
+                    rs.getString("nome_sessao"),
+                    rs.getString("nome_dificuldade"),
+                    rs.getInt("pontuacao_total"),
+                    rs.getInt("quantidade_perguntas"),
+                    rs.getString("data_hora_fim")
+                ));
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar histórico: " + ex.getMessage());
+        }
+
+        for (Partida partida : partidas) {
+            String icone;
+            switch (partida.nivel) {
+                case "MEDIO" : icone = "images\\biotech.png"; break;
+                case "DIFICIL" : icone = "images\\fluid_med.png"; break;
+                default : icone = "images\\labs.png"; break;
+            }
+            int acertos = partida.pontuacaoTotal / 10;
+            painelHistorico.add(criarItemHistorico(
+                partida.nomeJogo, icone, acertos, partida.totalPerguntas, partida.pontuacaoTotal,
+                partida.dataHoraFim, 0, yItem, wLista, hItem
+            ));
             yItem += hItem + espacoItem;
         }
 
@@ -133,12 +189,12 @@ public class HistoricoAluno extends JFrame {
         setVisible(true);
     }
 
-    private JPanel criarItemHistorico(String nomeJogo, String iconePath, int acertos, int pontos, int x, int y, int w, int h) {
+    private JPanel criarItemHistorico(String nomeJogo, String iconePath, int acertos, int total, int pontos, String dataHora, int x, int y, int w, int h) {
         Color corAzulEscuro = new Color(30, 55, 90);
 
         JPanel p = new JPanel() {
             @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
+                Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(Color.WHITE);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 25, 25);
@@ -158,7 +214,7 @@ public class HistoricoAluno extends JFrame {
                 g2.setFont(robotoBold10);
                 g2.drawString("Acertos", xAcertos, 65);
                 g2.setFont(robotoBold24);
-                g2.drawString(acertos + " / 10", xAcertos + 55, 40);
+                g2.drawString(acertos + " / " + total, xAcertos + 55, 40);
 
                 int xPontos = getWidth() - 170;
                 try {
@@ -183,7 +239,7 @@ public class HistoricoAluno extends JFrame {
         lblNome.setBounds(100, 15, w - 400, 30);
         p.add(lblNome);
 
-        JLabel lblData = new JLabel("jogado em 20/3/2026");
+        JLabel lblData = new JLabel("jogado em " + dataHora);
         lblData.setFont(robotoBold14);
         lblData.setForeground(corAzulEscuro);
         lblData.setBounds(100, 45, w - 400, 20);
@@ -204,7 +260,7 @@ public class HistoricoAluno extends JFrame {
             b.setBounds(x, 0,   60, 60);
             b.addActionListener(e -> { 
                 this.dispose(); 
-                new MenuAluno().setVisible(true); // Volta passando o nome
+                new MenuAluno(Sessao.nomeUsuario).setVisible(true); // Volta passando o nome
             });
         } else {
             b.setFont(new Font("Arial", Font.BOLD, 24));
