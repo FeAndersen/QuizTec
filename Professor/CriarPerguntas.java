@@ -128,14 +128,36 @@ public class CriarPerguntas extends JFrame {
                 Graphics2D g2 = (Graphics2D) g.create();
                 
                 if (imagemAtualSelecionada != null) {
-                    g2.drawImage(imagemAtualSelecionada, 0, 0, getWidth(), getHeight(), this);
-                } else {
-                    g2.setColor(new Color(200, 200, 200)); 
+                    int imgW = imagemAtualSelecionada.getWidth(this);
+                    int imgH = imagemAtualSelecionada.getHeight(this);
+
+                    // Calcula escala mantendo proporção (contain)
+                    double escala = Math.min(
+                        (double) getWidth()  / imgW,
+                        (double) getHeight() / imgH
+                    );
+
+                    int drawW = (int) (imgW * escala);
+                    int drawH = (int) (imgH * escala);
+
+                    // Centraliza
+                    int drawX = (getWidth()  - drawW) / 2;
+                    int drawY = (getHeight() - drawH) / 2;
+
+                    // Fundo neutro atrás da imagem (para as "barras" do letterbox)
+                    g2.setColor(new Color(30, 30, 30));
                     g2.fillRect(0, 0, getWidth(), getHeight());
-                    super.paintComponent(g); 
+
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2.drawImage(imagemAtualSelecionada, drawX, drawY, drawW, drawH, this);
+                } else {
+                    g2.setColor(new Color(200, 200, 200));
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+                    super.paintComponent(g);
                 }
-                
-                g2.setColor(new Color(50, 150, 255)); 
+
+                g2.setColor(new Color(50, 150, 255));
                 g2.setStroke(new BasicStroke(6f));
                 g2.drawRect(3, 3, getWidth() - 6, getHeight() - 6);
                 g2.dispose();
