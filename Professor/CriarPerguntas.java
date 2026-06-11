@@ -20,6 +20,8 @@ public class CriarPerguntas extends JFrame {
     private Font robotoBold32, robotoBold24, robotoBold20, robotoBold28;
     
     // --- VARIÁVEIS DE ESTADO DO JOGO ---
+    private int idSessaoEditar = 0;
+    private String nomeJogoExistente = "";
     private String nivelDificuldade; // RECEBE O NÍVEL AQUI
     private List<Pergunta> listaPerguntas = new ArrayList<>();
     private int indiceAtual = 0;
@@ -38,14 +40,75 @@ public class CriarPerguntas extends JFrame {
         String enunciado = "";
         String[] alternativas = {"", "", "", ""};
         int correta = -1;
+        Integer idImagemExistente = null;
+        Image imagemCarregada = null;
+    }
+
+    public CriarPerguntas(String nivel) {
+        this(nivel, 0);
     }
 
     // CONSTRUTOR AGORA EXIGE O NÍVEL
-    public CriarPerguntas(String nivel) {
+    public CriarPerguntas(String nivel, int idSessaoEditar) {
+        this.idSessaoEditar = idSessaoEditar;
         this.nivelDificuldade = nivel; // Salva o nível escolhido para usar depois
 
         carregarFontes();
         listaPerguntas.add(new Pergunta());
+
+        if (idSessaoEditar > 0) {
+            listaPerguntas.clear();
+            try (Connection con = Conexao.conectar()) {
+                PreparedStatement stmtNome = con.prepareStatement(
+                    "SELECT nome_sessao FROM sessao WHERE id_sessao = ?"
+                );
+                stmtNome.setInt(1, idSessaoEditar);
+                ResultSet rsNome = stmtNome.executeQuery();
+                if (rsNome.next()) nomeJogoExistente = rsNome.getString("nome_sessao");
+
+                PreparedStatement stmtP = con.prepareStatement(
+                    "SELECT p.id_pergunta, p.enunciado, p.id_imagem " +
+                    "FROM pergunta p " +
+                    "JOIN perguntas_sessao ps USING(id_pergunta) " +
+                    "WHERE ps.id_sessao = ? ORDER BY ps.id_pergunta"
+                );
+                stmtP.setInt(1, idSessaoEditar);
+                ResultSet rsP = stmtP.executeQuery();
+                while (rsP.next()) {
+                    Pergunta perg = new Pergunta();
+                    perg.enunciado = rsP.getString("enunciado");
+                    int idImg = rsP.getInt("id_imagem");
+                    perg.idImagemExistente = rsP.wasNull() ? null : idImg;
+
+                    PreparedStatement stmtA = con.prepareStatement(
+                        "SELECT resposta, correta FROM alternativa WHERE id_pergunta = ? ORDER BY id_alternativa"
+                    );
+                    stmtA.setInt(1, rsP.getInt("id_pergunta"));
+                    ResultSet rsA = stmtA.executeQuery();
+                    int idx = 0;
+                    while (rsA.next() && idx < 4) {
+                        perg.alternativas[idx] = rsA.getString("resposta");
+                        if (rsA.getBoolean("correta")) perg.correta = idx;
+                        idx++;
+                    }
+
+                    if (perg.idImagemExistente != null) {
+                        PreparedStatement stmtImg = con.prepareStatement(
+                            "SELECT arquivo_imagem FROM imagem WHERE id_imagem = ?"
+                        );
+                        stmtImg.setInt(1, perg.idImagemExistente);
+                        ResultSet rsImg = stmtImg.executeQuery();
+                        if (rsImg.next()) {
+                            perg.imagemCarregada = new ImageIcon(rsImg.getBytes("arquivo_imagem")).getImage();
+                        }
+                    }
+                    listaPerguntas.add(perg);
+                }
+                if (listaPerguntas.isEmpty()) listaPerguntas.add(new Pergunta());
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Erro ao carregar jogo: " + ex.getMessage());
+            }
+        }
 
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -207,8 +270,14 @@ public class CriarPerguntas extends JFrame {
         opcaoCorreta = p.correta;
         for (JButton b : btnBolinhas) { if (b != null) b.repaint(); }
 
-        if (!p.fotoCaminho.isEmpty()) { imagemAtualSelecionada = new ImageIcon(p.fotoCaminho).getImage(); } 
-        else { imagemAtualSelecionada = null; }
+        if (!p.fotoCaminho.isEmpty()) { 
+            imagemAtualSelecionada = new ImageIcon(p.fotoCaminho).getImage();
+        } 
+        else if (p.imagemCarregada != null) {
+            imagemAtualSelecionada = p.imagemCarregada;
+        } else {
+            imagemAtualSelecionada = null;
+        }
         
         btnCarregarFoto.repaint();
         txtContador.setText((indiceAtual + 1) + "/" + listaPerguntas.size());
@@ -295,6 +364,7 @@ public class CriarPerguntas extends JFrame {
         popupCard.add(lblTitulo);
 
         JTextField txtNomeJogo = new JTextField("Inserir nome");
+        if (idSessaoEditar > 0) txtNomeJogo.setText(nomeJogoExistente);
         txtNomeJogo.setHorizontalAlignment(JTextField.CENTER);
         txtNomeJogo.setFont(robotoBold20);
         txtNomeJogo.setBackground(new Color(220, 220, 220));
@@ -358,97 +428,191 @@ public class CriarPerguntas extends JFrame {
             }
 
             try (Connection con = Conexao.conectar()) {
-                PreparedStatement stmtDif = con.prepareStatement(
-                    "SELECT id_dificuldade FROM dificuldade WHERE nome_dificuldade = ?"
-                );
-                stmtDif.setString(1, nomeDificuldadeDB);
-                ResultSet rsDif = stmtDif.executeQuery();
+                if (idSessaoEditar > 0) {
+                    // MODO EDIÇÃO: apagar e reinserir
+                    List<Integer> idsAntigos = new ArrayList<>();
+                    PreparedStatement stmtIds = con.prepareStatement(
+                        "SELECT id_pergunta FROM perguntas_sessao WHERE id_sessao = ?"
+                    );
+                    stmtIds.setInt(1, idSessaoEditar);
+                    ResultSet rsIds = stmtIds.executeQuery();
+                    while (rsIds.next()) idsAntigos.add(rsIds.getInt("id_pergunta"));
 
-                if (!rsDif.next()) {
-                    JOptionPane.showMessageDialog(null, "Nível de dificuldade não encontrado no banco");
-                    return;
-                }
+                    for (int idP : idsAntigos) {
+                        PreparedStatement stmtDelRA = con.prepareStatement(
+                            "DELETE FROM resposta_aluno WHERE id_pergunta = ?"
+                        );
+                        stmtDelRA.setInt(1, idP);
+                        stmtDelRA.executeUpdate();
+                    }
 
-                int idDificuldade = rsDif.getInt("id_dificuldade");
+                    PreparedStatement stmtDelPS = con.prepareStatement(
+                        "DELETE FROM perguntas_sessao WHERE id_sessao = ?"
+                    );
+                    stmtDelPS.setInt(1, idSessaoEditar);
+                    stmtDelPS.executeUpdate();
 
-                PreparedStatement stmtSessao = con.prepareStatement (
-                    "INSERT INTO sessao (nome_sessao, quantidade_perguntas, id_professor, id_dificuldade) VALUES (?, ?, ?, ?)",
-                    Statement.RETURN_GENERATED_KEYS
-                );
-                stmtSessao.setString(1, nomeJogo);
-                stmtSessao.setInt(2, listaPerguntas.size());
-                stmtSessao.setInt(3, Sessao.idUsuario);
-                stmtSessao.setInt(4, idDificuldade);
-                stmtSessao.executeUpdate();
+                    for (int idP : idsAntigos) {
+                        PreparedStatement stmtDelP = con.prepareStatement(
+                            "DELETE FROM pergunta WHERE id_pergunta = ?"
+                        );
+                        stmtDelP.setInt(1, idP);
+                        stmtDelP.executeUpdate();
+                    }
 
-                ResultSet rsSessao = stmtSessao.getGeneratedKeys();
-                rsSessao.next();
-                int idSessao = rsSessao.getInt(1);
+                    PreparedStatement stmtUpd = con.prepareStatement(
+                        "UPDATE sessao SET nome_sessao = ?, quantidade_perguntas = ? WHERE id_sessao = ?"
+                    );
+                    stmtUpd.setString(1, nomeJogo);
+                    stmtUpd.setInt(2, listaPerguntas.size());
+                    stmtUpd.setInt(3, idSessaoEditar);
+                    stmtUpd.executeUpdate();
 
-                for (Pergunta p : listaPerguntas) {
-                    Integer idImagem = null;
-                    if (!p.fotoCaminho.isEmpty()) {
-                        File imgFile = new File(p.fotoCaminho);
-                        String nomeArquivo = imgFile.getName();
-                        String extensao = nomeArquivo.substring(nomeArquivo.lastIndexOf('.') + 1).toLowerCase();
-                        byte[] imgBytes = Files.readAllBytes(imgFile.toPath());
+                    for (Pergunta p : listaPerguntas) {
+                        Integer idImagem = p.idImagemExistente;
+                        if (!p.fotoCaminho.isEmpty()) {
+                            File imgFile = new File(p.fotoCaminho);
+                            String nomeArquivo = imgFile.getName();
+                            String extensao = nomeArquivo.substring(nomeArquivo.lastIndexOf('.') + 1).toLowerCase();
+                            byte[] imgBytes = java.nio.file.Files.readAllBytes(imgFile.toPath());
+                            PreparedStatement stmtImg = con.prepareStatement(
+                                "INSERT INTO imagem (arquivo_imagem, tipo_imagem, nome_imagem) VALUES (?, ?, ?)",
+                                Statement.RETURN_GENERATED_KEYS
+                            );
+                            stmtImg.setBytes(1, imgBytes);
+                            stmtImg.setString(2, extensao);
+                            stmtImg.setString(3, nomeArquivo.length() > 30 ? nomeArquivo.substring(0, 30) : nomeArquivo);
+                            stmtImg.executeUpdate();
+                            ResultSet rsImg = stmtImg.getGeneratedKeys();
+                            rsImg.next();
+                            idImagem = rsImg.getInt(1);
+                        }
 
-                        PreparedStatement stmtImg = con.prepareStatement(
-                            "INSERT INTO imagem (arquivo_imagem, tipo_imagem, nome_imagem) VALUES (?, ?, ?)",
+                        PreparedStatement stmtPerg = con.prepareStatement(
+                            "INSERT INTO pergunta (enunciado, tipo_pergunta, pontuacao, id_imagem) VALUES (?, ?, ?, ?)",
                             Statement.RETURN_GENERATED_KEYS
                         );
-                        stmtImg.setBytes(1, imgBytes);
-                        stmtImg.setString(2, extensao);
-                        stmtImg.setString(3, nomeArquivo.length() > 30 ? nomeArquivo.substring(0, 30) : nomeArquivo);
-                        stmtImg.executeUpdate();
+                        stmtPerg.setString(1, p.enunciado);
+                        stmtPerg.setString(2, tipoPergunta);
+                        stmtPerg.setInt(3, 10);
+                        if (idImagem != null) stmtPerg.setInt(4, idImagem);
+                        else stmtPerg.setNull(4, java.sql.Types.INTEGER);
+                        stmtPerg.executeUpdate();
 
-                        ResultSet rsImg = stmtImg.getGeneratedKeys();
-                        rsImg.next();
-                        idImagem = rsImg.getInt(1);
-                    }
+                        ResultSet rsPerg = stmtPerg.getGeneratedKeys();
+                        rsPerg.next();
+                        int idPergunta = rsPerg.getInt(1);
 
+                        for (int i = 0; i < 4; i++) {
+                            PreparedStatement stmtAlt = con.prepareStatement(
+                                "INSERT INTO alternativa (resposta, tipo_alternativa, correta, id_pergunta) VALUES (?, 'texto', ?, ?)"
+                            );
+                            stmtAlt.setString(1, p.alternativas[i]);
+                            stmtAlt.setBoolean(2, i == p.correta);
+                            stmtAlt.setInt(3, idPergunta);
+                            stmtAlt.executeUpdate();
+                        }
 
-
-                    PreparedStatement stmtPerg = con.prepareStatement(
-                        "INSERT INTO pergunta (enunciado, tipo_pergunta, pontuacao, id_imagem) VALUES (?, ?, ?, ?)",
-                        Statement.RETURN_GENERATED_KEYS               
-                    );
-                    stmtPerg.setString(1, p.enunciado);
-                    stmtPerg.setString(2, tipoPergunta);
-                    stmtPerg.setInt(3, 10);
-                    if (idImagem != null) {
-                        stmtPerg.setInt(4, idImagem);
-                    } else {
-                        stmtPerg.setNull(4, java.sql.Types.INTEGER);
-                    }
-                    stmtPerg.executeUpdate();
-
-                    ResultSet rsPerg = stmtPerg.getGeneratedKeys();
-                    rsPerg.next();
-                    int idPergunta = rsPerg.getInt(1);
-
-                    for (int i = 0; i < 4; i++) {
-                        PreparedStatement stmtAlt = con.prepareStatement(
-                            "INSERT INTO alternativa (resposta, tipo_alternativa, correta, id_pergunta) VALUES (?, 'texto', ?, ?)"
+                        PreparedStatement stmtPS = con.prepareStatement(
+                            "INSERT INTO perguntas_sessao (id_sessao, id_pergunta) VALUES (?, ?)"
                         );
-                        stmtAlt.setString(1, p.alternativas[i]);
-                        stmtAlt.setBoolean(2, i == p.correta);
-                        stmtAlt.setInt(3, idPergunta);
-                        stmtAlt.executeUpdate();
+                        stmtPS.setInt(1, idSessaoEditar);
+                        stmtPS.setInt(2, idPergunta);
+                        stmtPS.executeUpdate();
                     }
 
-                    PreparedStatement stmtPS = con.prepareStatement(
-                        "INSERT INTO perguntas_sessao (id_sessao, id_pergunta) VALUES (?, ?)"
-                    );
-                    stmtPS.setInt(1, idSessao);
-                    stmtPS.setInt(2, idPergunta);
-                    stmtPS.executeUpdate();
-                }
+                    glassPane.setVisible(false);
+                    JOptionPane.showMessageDialog(null, "Jogo \"" + nomeJogo + "\" atualizado com sucesso!");
+                    dispose();
+                    new MenuProf().setVisible(true);
+                } else {
+                    PreparedStatement stmtDif = con.prepareStatement(
+        "SELECT id_dificuldade FROM dificuldade WHERE nome_dificuldade = ?"
+    );
+    stmtDif.setString(1, nomeDificuldadeDB);
+    ResultSet rsDif = stmtDif.executeQuery();
 
-                glassPane.setVisible(false);
-                JOptionPane.showMessageDialog(null, "Jogo \"" + nomeJogo + "\" salvo com sucesso!");
-                dispose();
-                new MenuProf().setVisible(true);
+    if (!rsDif.next()) {
+        JOptionPane.showMessageDialog(null, "Nível de dificuldade não encontrado no banco");
+        return;
+    }
+
+    int idDificuldade = rsDif.getInt("id_dificuldade");
+
+    PreparedStatement stmtSessao = con.prepareStatement(
+        "INSERT INTO sessao (nome_sessao, quantidade_perguntas, id_professor, id_dificuldade) VALUES (?, ?, ?, ?)",
+        Statement.RETURN_GENERATED_KEYS
+    );
+    stmtSessao.setString(1, nomeJogo);
+    stmtSessao.setInt(2, listaPerguntas.size());
+    stmtSessao.setInt(3, Sessao.idUsuario);
+    stmtSessao.setInt(4, idDificuldade);
+    stmtSessao.executeUpdate();
+
+    ResultSet rsSessao = stmtSessao.getGeneratedKeys();
+    rsSessao.next();
+    int idSessao = rsSessao.getInt(1);
+
+    for (Pergunta p : listaPerguntas) {
+        Integer idImagem = null;
+        if (!p.fotoCaminho.isEmpty()) {
+            File imgFile = new File(p.fotoCaminho);
+            String nomeArquivo = imgFile.getName();
+            String extensao = nomeArquivo.substring(nomeArquivo.lastIndexOf('.') + 1).toLowerCase();
+            byte[] imgBytes = java.nio.file.Files.readAllBytes(imgFile.toPath());
+
+            PreparedStatement stmtImg = con.prepareStatement(
+                "INSERT INTO imagem (arquivo_imagem, tipo_imagem, nome_imagem) VALUES (?, ?, ?)",
+                Statement.RETURN_GENERATED_KEYS
+            );
+            stmtImg.setBytes(1, imgBytes);
+            stmtImg.setString(2, extensao);
+            stmtImg.setString(3, nomeArquivo.length() > 30 ? nomeArquivo.substring(0, 30) : nomeArquivo);
+            stmtImg.executeUpdate();
+
+            ResultSet rsImg = stmtImg.getGeneratedKeys();
+            rsImg.next();
+            idImagem = rsImg.getInt(1);
+        }
+
+        PreparedStatement stmtPerg = con.prepareStatement(
+            "INSERT INTO pergunta (enunciado, tipo_pergunta, pontuacao, id_imagem) VALUES (?, ?, ?, ?)",
+            Statement.RETURN_GENERATED_KEYS
+        );
+        stmtPerg.setString(1, p.enunciado);
+        stmtPerg.setString(2, tipoPergunta);
+        stmtPerg.setInt(3, 10);
+        if (idImagem != null) stmtPerg.setInt(4, idImagem);
+        else stmtPerg.setNull(4, java.sql.Types.INTEGER);
+        stmtPerg.executeUpdate();
+
+        ResultSet rsPerg = stmtPerg.getGeneratedKeys();
+        rsPerg.next();
+        int idPergunta = rsPerg.getInt(1);
+
+        for (int i = 0; i < 4; i++) {
+            PreparedStatement stmtAlt = con.prepareStatement(
+                "INSERT INTO alternativa (resposta, tipo_alternativa, correta, id_pergunta) VALUES (?, 'texto', ?, ?)"
+            );
+            stmtAlt.setString(1, p.alternativas[i]);
+            stmtAlt.setBoolean(2, i == p.correta);
+            stmtAlt.setInt(3, idPergunta);
+            stmtAlt.executeUpdate();
+        }
+
+        PreparedStatement stmtPS = con.prepareStatement(
+            "INSERT INTO perguntas_sessao (id_sessao, id_pergunta) VALUES (?, ?)"
+        );
+        stmtPS.setInt(1, idSessao);
+        stmtPS.setInt(2, idPergunta);
+        stmtPS.executeUpdate();
+    }
+
+    glassPane.setVisible(false);
+    JOptionPane.showMessageDialog(null, "Jogo \"" + nomeJogo + "\" salvo com sucesso!");
+    dispose();
+    new MenuProf().setVisible(true);
+                }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, "Erro ao salvar: " + ex.getMessage());
             }

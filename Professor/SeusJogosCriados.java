@@ -17,12 +17,14 @@ public class SeusJogosCriados extends JFrame {
 
 
     public static class Jogo {
+        public int id;
         public String nome;
         public String nivel;
         public String dataCriacao;
         public int quantidadePerguntas;
 
-        public Jogo(String nome, String nivel, String dataCriacao, int qtd) {
+        public Jogo(int id, String nome, String nivel, String dataCriacao, int qtd) {
+            this.id = id;
             this.nome = nome;
             this.nivel = nivel;
             this.dataCriacao = dataCriacao;
@@ -37,7 +39,7 @@ public class SeusJogosCriados extends JFrame {
         List<Jogo> jogos = new ArrayList<>();
         try (Connection con = Conexao.conectar()) {
             PreparedStatement stmt = con.prepareStatement(
-                "SELECT s.nome_sessao, d.nome_dificuldade, s.data_criacao, s.quantidade_perguntas " +
+                "SELECT s.id_sessao, s.nome_sessao, d.nome_dificuldade, s.data_criacao, s.quantidade_perguntas " +
                 "FROM sessao s " +
                 "JOIN dificuldade d ON s.id_dificuldade = d.id_dificuldade " +
                 "WHERE s.id_professor = ? " +
@@ -49,6 +51,7 @@ public class SeusJogosCriados extends JFrame {
             
             while (rs.next()) {
                 jogos.add(new Jogo(
+                    rs.getInt("id_sessao"),
                     rs.getString("nome_sessao"),
                     rs.getString("nome_dificuldade"),
                     rs.getDate("data_criacao").toString(),
@@ -236,14 +239,14 @@ public class SeusJogosCriados extends JFrame {
         int btnH = 70;
         int startXBtns = w - (btnW * 3) - 20;
 
-        p.add(criarBotaoAcao("Renomear", "images\\rename.png", startXBtns, 10, btnW, btnH));
-        p.add(criarBotaoAcao("Editar", "images\\edit.png", startXBtns + btnW, 10, btnW, btnH));
-        p.add(criarBotaoAcao("Apagar", "images\\delete.png", startXBtns + (btnW * 2), 10, btnW, btnH));
+        p.add(criarBotaoAcao("Renomear", "images\\rename.png", startXBtns, 10, btnW, btnH, jogo));
+        p.add(criarBotaoAcao("Editar", "images\\edit.png", startXBtns + btnW, 10, btnW, btnH, jogo));
+        p.add(criarBotaoAcao("Apagar", "images\\delete.png", startXBtns + (btnW * 2), 10, btnW, btnH, jogo));
 
         return p;
     }
 
-    private JButton criarBotaoAcao(String texto, String caminhoIcone, int x, int y, int w, int h) {
+    private JButton criarBotaoAcao(String texto, String caminhoIcone, int x, int y, int w, int h, Jogo jogo) {
         Color corAzulEscuro = new Color(30, 55, 90);
         Color corHover = new Color(240, 240, 240);
 
@@ -257,14 +260,11 @@ public class SeusJogosCriados extends JFrame {
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
 
-                // ==========================================
-                // LÓGICA DE RENDERIZAÇÃO DO ÍCONE PNG
-                // ==========================================
                 try {
                     ImageIcon icon = new ImageIcon(caminhoIcone);
                     Image img = icon.getImage();
                     
-                    // Centraliza e redimensiona o ícone para caber no botão (ex: 30x30)
+                    
                     int iconDim = 30;
                     int iconX = (getWidth() - iconDim) / 2;
                     int iconY = (getHeight() - iconDim) / 2 - 10; // Levanta um pouco para o texto
@@ -298,9 +298,58 @@ public class SeusJogosCriados extends JFrame {
 
         // Exemplo de ação para os botões do Histórico
         b.addActionListener(e -> {
-            if (texto.equals("Apagar")) {
-                System.out.println("Lógica para apagar o jogo da lista...");
+            if (texto.equals("Renomear")) {
+                String novoNome = JOptionPane.showInputDialog(null, "Novo nome para o jogo:", jogo.nome);
+                if (novoNome == null || novoNome.trim().isEmpty()) return;
+                try (Connection con = Conexao.conectar()) {
+                    PreparedStatement stmt = con.prepareStatement(
+                        "UPDATE sessao SET nome_sessao = ? WHERE id_sessao = ?"
+                    );
+                    stmt.setString(1, novoNome.trim());
+                    stmt.setInt(2, jogo.id);
+                    stmt.executeUpdate();
+                    JOptionPane.showMessageDialog(null, "Jogo renomeado com sucesso!");
+                    dispose();
+                    new SeusJogosCriados().setVisible(true);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao renomear: " + ex.getMessage());
+                }
+            } else if (texto.equals("Editar")) {
+                String nivelUI;
+                switch (jogo.nivel) {
+                    case "MEDIO": nivelUI = "Médio"; break;
+                    case "DIFICIL": nivelUI = "Difícil"; break;
+                    default: nivelUI = "Fácil"; break;
+                }
+                dispose();
+                new CriarPerguntas(nivelUI, jogo.id).setVisible(true);
+            } else if (texto.equals("Apagar")) {
+                int confirm = JOptionPane.showConfirmDialog(null,
+                    "Tem certeza que deseja apagar \"" + jogo.nome + "\"?\nEsta ação não pode ser desfeita.",
+                    "Confirmar exclusão", JOptionPane.YES_NO_OPTION
+                );
+                if (confirm != JOptionPane.YES_OPTION) return;
+                try (Connection con = Conexao.conectar()) {
+                    PreparedStatement stmt1 = con.prepareStatement("DELETE FROM partida WHERE id_sessao = ?");
+                    stmt1.setInt(1, jogo.id);
+                    stmt1.executeUpdate();
+
+                    PreparedStatement stmt2 = con.prepareStatement("DELETE FROM perguntas_sessao WHERE id_sessao = ?");
+                    stmt2.setInt(1, jogo.id);
+                    stmt2.executeUpdate();
+
+                    PreparedStatement stmt3 = con.prepareStatement("DELETE FROM sessao WHERE id_sessao = ?");
+                    stmt3.setInt(1, jogo.id);
+                    stmt3.executeUpdate();
+
+                    JOptionPane.showMessageDialog(null, "Jogo apagado com sucesso");
+                    dispose();
+                    new SeusJogosCriados().setVisible(true);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao apagar: " + ex.getMessage());
+                }
             }
+            
         });
 
         return b;
