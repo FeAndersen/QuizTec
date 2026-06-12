@@ -197,7 +197,26 @@ public class CriarPerguntas extends JFrame {
                 Graphics2D g2 = (Graphics2D) g.create();
                 
                 if (imagemAtualSelecionada != null) {
-                    g2.drawImage(imagemAtualSelecionada, 0, 0, getWidth(), getHeight(), this);
+                    int imgW = imagemAtualSelecionada.getWidth(this);
+                    int imgH = imagemAtualSelecionada.getHeight(this);
+
+                    double escala = Math.min(
+                        (double) getWidth()  / imgW,
+                        (double) getHeight() / imgH
+                    );
+
+                    int drawW = (int) (imgW * escala);
+                    int drawH = (int) (imgH * escala);
+
+                    int drawX = (getWidth()  - drawW) / 2;
+                    int drawY = (getHeight() - drawH) / 2;
+
+                    g2.setColor(new Color(30, 30, 30));
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2.drawImage(imagemAtualSelecionada, drawX, drawY, drawW, drawH, this);
                 } else {
                     g2.setColor(new Color(200, 200, 200)); 
                     g2.fillRect(0, 0, getWidth(), getHeight());
