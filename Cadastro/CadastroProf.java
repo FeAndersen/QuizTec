@@ -132,6 +132,11 @@ public class CadastroProf extends JFrame {
                 return;
             }
 
+            if(!email.endsWith("@cps.sp.gov.br") || email.endsWith("@aluno.cps.sp.gov.br")) {
+                JOptionPane.showMessageDialog(null, "Use um email de professor: xxxxxx@cps.sp.gov.br");
+                return;
+            }
+
             String senhaHash = BCrypt.hashpw(senha, BCrypt.gensalt());
 
             try (Connection con = Conexao.conectar()) {
@@ -148,6 +153,7 @@ public class CadastroProf extends JFrame {
                 if (rs.next()) {
                     Sessao.idUsuario = rs.getInt(1);
                     Sessao.tipoUsuario = "professor";
+                    Sessao.nomeUsuario = nome;
                 }
 
                 dispose();

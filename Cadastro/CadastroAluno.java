@@ -144,6 +144,11 @@ public class CadastroAluno extends JFrame {
                 return;
             }
 
+            if(!email.endsWith("@aluno.cps.sp.gov.br")) {
+                JOptionPane.showMessageDialog(null, "Use um email de aluno: xxxxxx@aluno.cps.sp.gov.br");
+                return;
+            }
+
             String senhaHash = BCrypt.hashpw(senha, BCrypt.gensalt());
             int idTurma = mapaTurmas.get(turmaSelecionada);
 
@@ -165,7 +170,7 @@ public class CadastroAluno extends JFrame {
                 }
 
                 dispose();
-                new MenuAluno().setVisible(true);
+                new MenuAluno(Sessao.nomeUsuario).setVisible(true);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, "Erro ao cadastrar: " + ex.getMessage());
             }
