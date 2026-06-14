@@ -518,10 +518,11 @@ public class SeusAlunos extends JFrame {
 
         int btnW = 60;
         int btnH = h;
-        int startXBtns = w - (btnW * 2) - 20;
-
-        p.add(criarBotaoAcao("Renomear", "images\\rename.png", startXBtns, 0, btnW, btnH, aluno));
-        p.add(criarBotaoAcao("Remover", "images\\person_remove.png", startXBtns + btnW, 0, btnW, btnH, aluno));
+        int startXBtns = w - (btnW * 3) - 20;
+        
+        p.add(criarBotaoAcao("Histórico", "images\\insert_chart.png", startXBtns, 0, btnW, btnH, aluno));
+        p.add(criarBotaoAcao("Renomear", "images\\rename.png", startXBtns + btnW, 0, btnW, btnH, aluno));
+        p.add(criarBotaoAcao("Remover", "images\\person_remove.png", startXBtns + btnW * 2, 0, btnW, btnH, aluno));
 
         return p;
     }
@@ -587,6 +588,10 @@ public class SeusAlunos extends JFrame {
             } 
             else if(texto.equals("Renomear")) {
                 abrirPopupRenomearAluno(aluno); 
+            }
+            else if(texto.equals("Histórico")) {
+                dispose();
+                new DesempenhoAluno(aluno.id, aluno.nome).setVisible(true);
             }
         });
 
