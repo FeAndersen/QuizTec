@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
@@ -15,6 +16,8 @@ import java.sql.ResultSet;
 import org.mindrot.jbcrypt.BCrypt;
 import util.Conexao;
 import util.Sessao;
+import java.util.List;
+import javax.swing.plaf.basic.BasicComboBoxUI;
 
 public class CadastroProf extends JFrame {
 
@@ -74,9 +77,9 @@ public class CadastroProf extends JFrame {
         adicionarLogo(blocoCentral, "images\\Logo_cps.jpg", larguraBloco / 4, centroY + 130, 0.18);
 
         int fieldW = (int) (larguraBloco * 0.35); 
-        int fieldH = 50; 
+        int fieldH = 45; 
         int fieldX = (int) (larguraBloco * 0.75) - (fieldW / 2);
-        int espacoY = 15; 
+        int espacoY = 10; 
 
         JLabel txtTitulo = new JLabel("Novo Cadastro", SwingConstants.CENTER);
         txtTitulo.setForeground(Color.WHITE);
@@ -84,18 +87,76 @@ public class CadastroProf extends JFrame {
         txtTitulo.setBounds(larguraBloco / 2, centroY - 250, larguraBloco / 2, 80); 
         blocoCentral.add(txtTitulo);
 
-        int startYCampos = centroY - 140;
+        int startYCampos = centroY - 175;
         JTextField campoEmail = criarCampo("Inserir email", fieldX, startYCampos, fieldW, fieldH);
         JTextField campoNome = criarCampo("Inserir seu nome completo", fieldX, startYCampos + (fieldH + espacoY), fieldW, fieldH);
         JTextField campoSenha = criarCampo("Inserir senha", fieldX, startYCampos + (fieldH + espacoY) * 2, fieldW, fieldH);
         JTextField campoConfirmacao = criarCampo("Confirmação da senha", fieldX, startYCampos + (fieldH + espacoY) * 3, fieldW, fieldH);
         
-        
+        List<String> listaTurmas = new ArrayList<>();
+        listaTurmas.add("Selecionar Turma");
+        try (Connection con = Conexao.conectar()) {
+            PreparedStatement stmtLoad = con.prepareStatement(
+                "SELECT DISTINCT serie, letra FROM turma ORDER BY serie, letra"
+            );
+            ResultSet rsLoad = stmtLoad.executeQuery();
+            while (rsLoad.next()) {
+                listaTurmas.add(rsLoad.getInt("serie") + "º Ano " + rsLoad.getString("letra"));
+                } 
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Erro ao carregar turma: " + ex.getMessage());
+        }
+        JComboBox<String> comboTurma = new JComboBox<>(listaTurmas.toArray(new String[0]));
+
+        comboTurma.setBounds(fieldX, startYCampos + (fieldH + espacoY) * 4, fieldW, fieldH);
+        comboTurma.setFont(robotoRegular20);
+        comboTurma.setBackground(new Color(220, 220, 200));
+        comboTurma.setForeground(Color.DARK_GRAY);
+        comboTurma.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        comboTurma.setLightWeightPopupEnabled(false);
+
+        DefaultListCellRenderer dlcr = new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                label.setBackground(isSelected ? new Color(200, 200, 200) : new Color(220, 220, 200));
+                return label;
+            }
+        };
+        comboTurma.setRenderer(dlcr);
+
+        comboTurma.setUI(new BasicComboBoxUI() {
+            @Override
+            protected JButton createArrowButton() {
+                JButton button = new JButton() {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        super.paintComponent(g);
+                        Graphics2D g2 = (Graphics2D) g.create();
+                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                        g2.setColor(Color.DARK_GRAY);
+                        g2.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                        int cx = getWidth() / 2;
+                        int cy = getHeight() / 2;
+                        g2.drawLine(cx - 5, cy - 2, cx, cy + 3);
+                        g2.drawLine(cx, cy + 3, cx + 5, cy - 2);
+                        g2.dispose();
+                    }
+                };
+                button.setBackground(new Color(220, 220, 200));
+                button.setBorder(BorderFactory.createEmptyBorder());
+                button.setFocusPainted(false);
+                button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                return button;
+            }
+        });
         
         blocoCentral.add(campoEmail);
         blocoCentral.add(campoNome);
         blocoCentral.add(campoSenha);
         blocoCentral.add(campoConfirmacao);
+        blocoCentral.add(comboTurma);
 
         JButton btnSeguir = new JButton("Seguir") {
             @Override
@@ -107,7 +168,7 @@ public class CadastroProf extends JFrame {
                 super.paintComponent(g);
             }
         };
-        btnSeguir.setBounds(fieldX, startYCampos + (fieldH + espacoY) * 4 + 20, fieldW, 60);
+        btnSeguir.setBounds(fieldX, startYCampos + (fieldH + espacoY) * 5 + 15, fieldW, 55);
         btnSeguir.setForeground(Color.WHITE);
         btnSeguir.setFont(robotoSemiBold40.deriveFont(32f));
         btnSeguir.setContentAreaFilled(false);
@@ -121,6 +182,7 @@ public class CadastroProf extends JFrame {
             String nome = campoNome.getText().trim();
             String senha = campoSenha.getText().trim();
             String confirmacao = campoConfirmacao.getText().trim();
+            String turmaSelecionada = (String) comboTurma.getSelectedItem();
 
             if(email.isEmpty() || nome.isEmpty() || senha.isEmpty() || confirmacao.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Preencha todos os campos.");
@@ -134,6 +196,11 @@ public class CadastroProf extends JFrame {
 
             if(!email.endsWith("@cps.sp.gov.br") || email.endsWith("@aluno.cps.sp.gov.br")) {
                 JOptionPane.showMessageDialog(null, "Use um email de professor: xxxxxx@cps.sp.gov.br");
+                return;
+            }
+
+            if(turmaSelecionada == null || turmaSelecionada.equals("Selecionar Turma")) {
+                JOptionPane.showMessageDialog(null, "Selecione sua turma");
                 return;
             }
 
@@ -155,6 +222,16 @@ public class CadastroProf extends JFrame {
                     Sessao.tipoUsuario = "professor";
                     Sessao.nomeUsuario = nome;
                 }
+
+                int serieNum = Character.getNumericValue(turmaSelecionada.charAt(0));
+                String letraStr = String.valueOf(turmaSelecionada.charAt(turmaSelecionada.length() - 1));
+                PreparedStatement stmtTurma = con.prepareStatement(
+                    "INSERT INTO turma (serie, letra, id_professor) VALUES (?, ?, ?)"
+                );
+                stmtTurma.setInt(1, serieNum);
+                stmtTurma.setString(2, letraStr);
+                stmtTurma.setInt(3, Sessao.idUsuario);
+                stmtTurma.executeUpdate();
 
                 dispose();
                 new MenuProf().setVisible(true);
