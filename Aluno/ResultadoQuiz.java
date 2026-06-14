@@ -12,7 +12,7 @@ public class ResultadoQuiz extends JFrame {
 
     private Font robotoBold36, robotoBold24;
 
-    public ResultadoQuiz(int acertos, int total) {
+    public ResultadoQuiz(int acertos, int total, int pontuacaoTotal) {
         carregarFontes();
         try (Connection con = Conexao.conectar()) {
             PreparedStatement stmt = con.prepareStatement(
@@ -21,7 +21,7 @@ public class ResultadoQuiz extends JFrame {
             );
             stmt.setInt(1, Sessao.idUsuario);
             stmt.setInt(2, Sessao.idSessao);
-            stmt.setInt(3, acertos * 10);
+            stmt.setInt(3, pontuacaoTotal);
             stmt.executeUpdate();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Erro ao salvar resultado: " + ex.getMessage());
@@ -254,7 +254,4 @@ public class ResultadoQuiz extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ResultadoQuiz(8, 10)); 
-    }
 }

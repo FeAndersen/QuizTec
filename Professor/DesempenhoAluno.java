@@ -18,13 +18,15 @@ public class DesempenhoAluno extends JFrame {
     static class Partida {
         String nomeJogo, nivel, dataHoraFim;
         int pontuacaoTotal, totalPerguntas;
+        double multiplicador;
 
-        Partida(String nomeJogo, String nivel, int pontuacaoTotal, int totalPerguntas, String dataHoraFim) {
+        Partida(String nomeJogo, String nivel, int pontuacaoTotal, int totalPerguntas, String dataHoraFim, double multiplicador) {
             this.nomeJogo = nomeJogo;
             this.nivel = nivel;
             this.pontuacaoTotal = pontuacaoTotal;
             this.totalPerguntas = totalPerguntas;
             this.dataHoraFim = dataHoraFim;
+            this.multiplicador = multiplicador;
         }
     }
 
@@ -122,7 +124,7 @@ public class DesempenhoAluno extends JFrame {
 
         try (Connection con = Conexao.conectar()) {
             PreparedStatement stmt = con.prepareStatement(
-                "SELECT s.nome_sessao, d.nome_dificuldade, p.pontuacao_total, s.quantidade_perguntas, p.data_hora_fim " +
+                "SELECT s.nome_sessao, d.nome_dificuldade, d.multiplicador_pontos, p.pontuacao_total, s.quantidade_perguntas, p.data_hora_fim " +
                 "FROM partida p " +
                 "JOIN sessao s USING(id_sessao) " +
                 "JOIN dificuldade d USING(id_dificuldade) " +
@@ -137,7 +139,8 @@ public class DesempenhoAluno extends JFrame {
                     rs.getString("nome_dificuldade"),
                     rs.getInt("pontuacao_total"),
                     rs.getInt("quantidade_perguntas"),
-                    rs.getString("data_hora_fim")
+                    rs.getString("data_hora_fim"),
+                    rs.getDouble("multiplicador_pontos")
                 ));
             }
         } catch (Exception ex) {
@@ -159,7 +162,7 @@ public class DesempenhoAluno extends JFrame {
                 case "DIFICIL": icone = "images\\fluid_med.png"; break;
                 default: icone = "images\\labs.png"; break;
             }
-            int acertos = partida.pontuacaoTotal / 10;
+            int acertos = (int)(partida.pontuacaoTotal / (10.0 * partida.multiplicador));
             painelHistorico.add(criarItemHistorico(
                 partida.nomeJogo, icone, acertos, partida.totalPerguntas,
                 partida.pontuacaoTotal, partida.dataHoraFim, 0, yItem, wLista, hItem

@@ -18,6 +18,8 @@ public class JogarQuiz extends JFrame {
     private JLabel txtContador;
     private int questaoAtual = 0;
     private int pontuacao = 0;
+    private double multiplicador = 1.0;
+    private int pontuacaoTotal = 0;
     private boolean mostrarFeedback = false;
     private boolean acertou = false;
     private Image imagemAtual = null;
@@ -53,6 +55,19 @@ public class JogarQuiz extends JFrame {
     public JogarQuiz() {
 
         try (Connection con = Conexao.conectar()) {
+            
+                PreparedStatement stmtMult = con.prepareStatement(
+                    "SELECT d.multiplicador_pontos FROM sessao s " +
+                    "JOIN dificuldade d USING(id_dificuldade) " +
+                    "WHERE s.id_sessao = ?"
+                );
+                stmtMult.setInt(1, Sessao.idSessao);
+                ResultSet rsMult = stmtMult.executeQuery();
+                if (rsMult.next()) {
+                    multiplicador = rsMult.getDouble("multiplicador_pontos");
+                }
+            
+            
             PreparedStatement stmtP = con.prepareStatement(
                 "SELECT p.id_pergunta, p.enunciado, p.id_imagem " +
                 "FROM pergunta p " +
@@ -288,7 +303,10 @@ public class JogarQuiz extends JFrame {
     private void processarResposta(boolean isCorreta) {
         acertou = isCorreta;
 
-        if (isCorreta) pontuacao ++;
+        if (isCorreta) {
+            pontuacao++;
+            pontuacaoTotal += (int)(10 * multiplicador);
+        }
 
         for (JButton btn : btnAlternativas) btn.setEnabled(false);
         
@@ -307,7 +325,7 @@ public class JogarQuiz extends JFrame {
                 carregarQuestao();
                 } else {
                 dispose();
-                new ResultadoQuiz(pontuacao, perguntas.size()).setVisible(true);
+                new ResultadoQuiz(pontuacao, perguntas.size(), pontuacaoTotal).setVisible(true);
             }
         });
         timer.setRepeats(false);
