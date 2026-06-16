@@ -20,6 +20,7 @@ public class JogarQuiz extends JFrame {
     private int pontuacao = 0;
     private double multiplicador = 1.0;
     private int pontuacaoTotal = 0;
+    private boolean ajudaUsada = false;
     private boolean mostrarFeedback = false;
     private boolean acertou = false;
     private Image imagemAtual = null;
@@ -207,6 +208,7 @@ public class JogarQuiz extends JFrame {
             btnAlternativas[idx].setEnabled(false);
             btnAlternativas[idx].repaint();
 
+            ajudaUsada = true;
             btnAjuda.setEnabled(false);
         });
 
@@ -305,7 +307,8 @@ public class JogarQuiz extends JFrame {
 
         if (isCorreta) {
             pontuacao++;
-            pontuacaoTotal += (int)(10 * multiplicador);
+            int pontosPorQuestao = ajudaUsada ? (int)(5 * multiplicador) : (int)(10 * multiplicador);
+            pontuacaoTotal += pontosPorQuestao;
         }
 
         for (JButton btn : btnAlternativas) btn.setEnabled(false);
@@ -362,6 +365,7 @@ public class JogarQuiz extends JFrame {
                 corretasAlternativas[i] = false;
             }
             btnAlternativas[i].setEnabled(true);
+            ajudaUsada = false;
             btnAjuda.setEnabled(true);
             btnAlternativas[i].repaint();
         }

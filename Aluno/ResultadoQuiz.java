@@ -16,12 +16,13 @@ public class ResultadoQuiz extends JFrame {
         carregarFontes();
         try (Connection con = Conexao.conectar()) {
             PreparedStatement stmt = con.prepareStatement(
-                "INSERT INTO partida (id_aluno, id_sessao, pontuacao_total, data_hora_fim, status_partida) " +
-                "VALUES (?, ?, ?, NOW(), 'finalizado')" 
+                "INSERT INTO partida (id_aluno, id_sessao, pontuacao_total, acertos, data_hora_fim, status_partida) " +
+                "VALUES (?, ?, ?, ?, NOW(), 'finalizado')" 
             );
             stmt.setInt(1, Sessao.idUsuario);
             stmt.setInt(2, Sessao.idSessao);
             stmt.setInt(3, pontuacaoTotal);
+            stmt.setInt(4, acertos);
             stmt.executeUpdate();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Erro ao salvar resultado: " + ex.getMessage());
