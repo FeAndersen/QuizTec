@@ -226,7 +226,17 @@ public class JogarQuiz extends JFrame {
         painelFoto = new JPanel() {
             @Override protected void paintComponent(Graphics g) {
                 if (imagemAtual != null) {
-                    g.drawImage(imagemAtual, 0, 0, getWidth(), getHeight(), this);
+                    int imgW = imagemAtual.getWidth(this);
+                    int imgH = imagemAtual.getHeight(this);
+                    if (imgW <= 0 || imgH <= 0) return;
+
+                    double escala = Math.min((double) getWidth() / imgW, (double) getHeight() / imgH);
+                    int novaLarg = (int)(imgW * escala);
+                    int novaAlt = (int)(imgH * escala);
+                    int imgX = (getWidth() - novaLarg) / 2;
+                    int imgY = (getHeight() - novaAlt) / 2;
+
+                    g.drawImage(imagemAtual, imgX, imgY, novaLarg, novaAlt, this);
                 }
             }
         };
@@ -338,7 +348,7 @@ public class JogarQuiz extends JFrame {
     private void carregarQuestao () {
         Pergunta p = perguntas.get(questaoAtual);
         txtContador.setText((questaoAtual + 1) + "/" + perguntas.size());
-        lblPergunta.setText("<html><div style='text-allign-center'>" + p.enunciado + "</div></html>");
+        lblPergunta.setText("<html><div style='text-align:center'>" + p.enunciado + "</div></html>");
 
         imagemAtual = null;
 
