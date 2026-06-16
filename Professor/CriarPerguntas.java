@@ -34,6 +34,8 @@ public class CriarPerguntas extends JFrame {
     private JButton btnCarregarFoto;
     private JLabel txtContador;
     private Image imagemAtualSelecionada = null; 
+    private Image[] imagensAlternativasSelecionadas = new Image[4];
+    private JButton[] btnImagensAlternativas = new JButton[4];
 
     class Pergunta {
         String fotoCaminho = "";
@@ -42,6 +44,9 @@ public class CriarPerguntas extends JFrame {
         int correta = -1;
         Integer idImagemExistente = null;
         Image imagemCarregada = null;
+        String[] fotoCaminhoAlternativas = {"", "", "", ""};
+        Integer[] idImagemAlternativaExistente = {null, null, null, null};
+        Image[] imagemAlternativaCarregada = {null, null, null, null};
     }
 
     public CriarPerguntas(String nivel) {
@@ -81,7 +86,7 @@ public class CriarPerguntas extends JFrame {
                     perg.idImagemExistente = rsP.wasNull() ? null : idImg;
 
                     PreparedStatement stmtA = con.prepareStatement(
-                        "SELECT resposta, correta FROM alternativa WHERE id_pergunta = ? ORDER BY id_alternativa"
+                        "SELECT resposta, correta, id_imagem FROM alternativa WHERE id_pergunta = ? ORDER BY id_alternativa"
                     );
                     stmtA.setInt(1, rsP.getInt("id_pergunta"));
                     ResultSet rsA = stmtA.executeQuery();
@@ -89,7 +94,22 @@ public class CriarPerguntas extends JFrame {
                     while (rsA.next() && idx < 4) {
                         perg.alternativas[idx] = rsA.getString("resposta");
                         if (rsA.getBoolean("correta")) perg.correta = idx;
+                        int idImgAlt = rsA.getInt("id_imagem");
+                        perg.idImagemAlternativaExistente[idx] = rsA.wasNull() ? null : idImgAlt;
                         idx++;
+                    }
+
+                    for (int altIdx = 0; altIdx < 4; altIdx++) {
+                        if (perg.idImagemAlternativaExistente[altIdx] != null) {
+                            PreparedStatement stmtImgAlt = con.prepareStatement(
+                                "SELECT arquivo_imagem FROM imagem WHERE id_imagem = ?"
+                            );
+                            stmtImgAlt.setInt(1, perg.idImagemAlternativaExistente[altIdx]);
+                            ResultSet rsImgAlt = stmtImgAlt.executeQuery();
+                            if (rsImgAlt.next()) {
+                                perg.imagemAlternativaCarregada[altIdx] = new ImageIcon(rsImgAlt.getBytes("arquivo_imagem")).getImage();
+                            }
+                        }
                     }
 
                     if (perg.idImagemExistente != null) {
@@ -181,7 +201,7 @@ public class CriarPerguntas extends JFrame {
         });
         cardPrincipal.add(btnConcluir);
 
-        int wImg = 550, hImg = 260, wOpcao = 450, hOpcao = 60;
+        int wImg = 550, hImg = 260, wOpcao = 450, hOpcao = 90;
         int espacoX = 50, espacoY = 25, hPergunta = 50;
         int margemAbaixoImg = 30, margemAbaixoPergunta = 30;
 
@@ -298,6 +318,18 @@ public class CriarPerguntas extends JFrame {
             imagemAtualSelecionada = null;
         }
         
+        for (int i = 0; i < 4; i++) {
+            Pergunta pAt = listaPerguntas.get(indiceAtual);
+            if (!pAt.fotoCaminhoAlternativas[i].isEmpty()) {
+                imagensAlternativasSelecionadas[i] = new ImageIcon(pAt.fotoCaminhoAlternativas[i]).getImage();
+            } else if (pAt.imagemAlternativaCarregada[i] != null) {
+                imagensAlternativasSelecionadas[i] = pAt.imagemAlternativaCarregada[i];
+            } else {
+                imagensAlternativasSelecionadas[i] = null;
+            }
+            if (btnImagensAlternativas[i] != null) btnImagensAlternativas[i].repaint();
+        }
+
         btnCarregarFoto.repaint();
         txtContador.setText((indiceAtual + 1) + "/" + listaPerguntas.size());
     }
@@ -311,6 +343,20 @@ public class CriarPerguntas extends JFrame {
             File arquivoSelecionado = fileChooser.getSelectedFile();
             listaPerguntas.get(indiceAtual).fotoCaminho = arquivoSelecionado.getAbsolutePath();
             atualizarTela();
+        }
+    }
+
+    private void escolherImagemAlternativa(int index) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Selecione uma imagem para a alternativa");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Imagens (JPG, PNG)", "jpg", "png", "jpeg"));
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File arquivoSelecionado = fileChooser.getSelectedFile();
+            listaPerguntas.get(indiceAtual).fotoCaminhoAlternativas[index] = arquivoSelecionado.getAbsolutePath();
+            listaPerguntas.get(indiceAtual).idImagemAlternativaExistente[index] = null;
+            imagensAlternativasSelecionadas[index] = new ImageIcon(arquivoSelecionado.getAbsolutePath()).getImage();
+            if (btnImagensAlternativas[index] != null) btnImagensAlternativas[index].repaint();
         }
     }
 
@@ -430,13 +476,18 @@ public class CriarPerguntas extends JFrame {
                     JOptionPane.showMessageDialog(null, "Pergunta " + (i + 1) + " não tem resposta correta marcada");
                     return;
                 }
-                for (int j = 0; j < 4; j++) {
-                    if (p.alternativas[j].isEmpty()){
-                        JOptionPane.showMessageDialog(null, "Pergunta " + (i + 1) + ": alternativa " + (char)('A' + j) + " está vazia");
-                        return;
-                    }
+                
+                for (int j = 0; j < 4; j++){
+                boolean temTexto = !p.alternativas[j].isEmpty();
+                boolean temImagem = !p.fotoCaminhoAlternativas[j].isEmpty()
+                                    || p.idImagemAlternativaExistente[j] != null
+                                    || p.imagemAlternativaCarregada[j] != null;
+                if (!temTexto && !temImagem) {
+                    JOptionPane.showMessageDialog(null, "Pergunta " + (i + 1) + ": alternativa " + (char)('A' + j) + " está vazia");
+                    return;
                 }
             }
+        }
 
             String nomeDificuldadeDB;
             String tipoPergunta;
@@ -522,15 +573,41 @@ public class CriarPerguntas extends JFrame {
                         rsPerg.next();
                         int idPergunta = rsPerg.getInt(1);
 
-                        for (int i = 0; i < 4; i++) {
+                       for (int i = 0; i < 4; i++) {
+                            Integer idImgAlt = null;
+                            if (!p.fotoCaminhoAlternativas[i].isEmpty()) {
+                            File imgAltFile = new File(p.fotoCaminhoAlternativas[i]);
+                            String nomeArqAlt = imgAltFile.getName();
+                            String extAlt = nomeArqAlt.substring(nomeArqAlt.lastIndexOf('.') + 1).toLowerCase();
+                            byte[] imgAltBytes = Files.readAllBytes(imgAltFile.toPath());
+                            PreparedStatement stmtImgAlt = con.prepareStatement(
+                                "INSERT INTO imagem (arquivo_imagem, tipo_imagem, nome_imagem) VALUES (?, ?, ?)",
+                                Statement.RETURN_GENERATED_KEYS
+                            );
+                            stmtImgAlt.setBytes(1, imgAltBytes);
+                            stmtImgAlt.setString(2, extAlt);
+                            stmtImgAlt.setString(3, nomeArqAlt.length() > 30 ? nomeArqAlt.substring(0, 30) : nomeArqAlt);
+                            stmtImgAlt.executeUpdate();
+                            ResultSet rsImgAlt = stmtImgAlt.getGeneratedKeys();
+                            rsImgAlt.next();
+                            idImgAlt = rsImgAlt.getInt(1);
+                            } else if (p.idImagemAlternativaExistente[i] != null) {
+                                idImgAlt = p.idImagemAlternativaExistente[i];
+                            }
+                            String tipoAlt = (idImgAlt != null && !p.alternativas[i].isEmpty()) ? "mista"
+                            : (idImgAlt != null) ? "imagem" : "texto";
                             PreparedStatement stmtAlt = con.prepareStatement(
-                                "INSERT INTO alternativa (resposta, tipo_alternativa, correta, id_pergunta) VALUES (?, 'texto', ?, ?)"
+                                "INSERT INTO alternativa (resposta, tipo_alternativa, correta, id_pergunta, id_imagem) VALUES (?, ?, ?, ?, ?)"
                             );
                             stmtAlt.setString(1, p.alternativas[i]);
-                            stmtAlt.setBoolean(2, i == p.correta);
-                            stmtAlt.setInt(3, idPergunta);
+                            stmtAlt.setString(2, tipoAlt);
+                            stmtAlt.setBoolean(3, i == p.correta);
+                            stmtAlt.setInt(4, idPergunta);
+                            if (idImgAlt != null) stmtAlt.setInt(5, idImgAlt);
+                            else stmtAlt.setNull(5, java.sql.Types.INTEGER);
                             stmtAlt.executeUpdate();
                         }
+
 
                         PreparedStatement stmtPS = con.prepareStatement(
                             "INSERT INTO perguntas_sessao (id_sessao, id_pergunta) VALUES (?, ?)"
@@ -610,14 +687,40 @@ public class CriarPerguntas extends JFrame {
         int idPergunta = rsPerg.getInt(1);
 
         for (int i = 0; i < 4; i++) {
-            PreparedStatement stmtAlt = con.prepareStatement(
-                "INSERT INTO alternativa (resposta, tipo_alternativa, correta, id_pergunta) VALUES (?, 'texto', ?, ?)"
-            );
-            stmtAlt.setString(1, p.alternativas[i]);
-            stmtAlt.setBoolean(2, i == p.correta);
-            stmtAlt.setInt(3, idPergunta);
-            stmtAlt.executeUpdate();
-        }
+    Integer idImgAlt = null;
+    if (!p.fotoCaminhoAlternativas[i].isEmpty()) {
+        File imgAltFile = new File(p.fotoCaminhoAlternativas[i]);
+        String nomeArqAlt = imgAltFile.getName();
+        String extAlt = nomeArqAlt.substring(nomeArqAlt.lastIndexOf('.') + 1).toLowerCase();
+        byte[] imgAltBytes = Files.readAllBytes(imgAltFile.toPath());
+        PreparedStatement stmtImgAlt = con.prepareStatement(
+            "INSERT INTO imagem (arquivo_imagem, tipo_imagem, nome_imagem) VALUES (?, ?, ?)",
+            Statement.RETURN_GENERATED_KEYS
+        );
+        stmtImgAlt.setBytes(1, imgAltBytes);
+        stmtImgAlt.setString(2, extAlt);
+        stmtImgAlt.setString(3, nomeArqAlt.length() > 30 ? nomeArqAlt.substring(0, 30) : nomeArqAlt);
+        stmtImgAlt.executeUpdate();
+        ResultSet rsImgAlt = stmtImgAlt.getGeneratedKeys();
+        rsImgAlt.next();
+        idImgAlt = rsImgAlt.getInt(1);
+    } else if (p.idImagemAlternativaExistente[i] != null) {
+        idImgAlt = p.idImagemAlternativaExistente[i];
+    }
+    String tipoAlt = (idImgAlt != null && !p.alternativas[i].isEmpty()) ? "mista"
+                   : (idImgAlt != null) ? "imagem" : "texto";
+    PreparedStatement stmtAlt = con.prepareStatement(
+        "INSERT INTO alternativa (resposta, tipo_alternativa, correta, id_pergunta, id_imagem) VALUES (?, ?, ?, ?, ?)"
+    );
+    stmtAlt.setString(1, p.alternativas[i]);
+    stmtAlt.setString(2, tipoAlt);
+    stmtAlt.setBoolean(3, i == p.correta);
+    stmtAlt.setInt(4, idPergunta);
+    if (idImgAlt != null) stmtAlt.setInt(5, idImgAlt);
+    else stmtAlt.setNull(5, java.sql.Types.INTEGER);
+    stmtAlt.executeUpdate();
+}
+
 
         PreparedStatement stmtPS = con.prepareStatement(
             "INSERT INTO perguntas_sessao (id_sessao, id_pergunta) VALUES (?, ?)"
@@ -662,8 +765,57 @@ public class CriarPerguntas extends JFrame {
         lblLetra.setBounds(10, 0, 50, h);
         painel.add(lblLetra);
 
-        txtOpcoes[index] = criarCampoTextoTransparente("escreva a opção", 60, 0, w - 130, h, robotoBold20);
+        txtOpcoes[index] = criarCampoTextoTransparente("escreva a opção", 60, 0, w - 185, h, robotoBold20);
         painel.add(txtOpcoes[index]);
+
+        JButton btnImgAlt = new JButton() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                Image img = imagensAlternativasSelecionadas[index];
+                if (img != null) {
+                    int imgW = img.getWidth(this);
+                    int imgH = img.getHeight(this);
+                    if (imgW > 0 && imgH > 0) {
+                        double escala = Math.min((double)(getWidth() - 4) / imgW, (double)(getHeight() - 4) / imgH);
+                        int dw = (int)(imgW * escala);
+                        int dh = (int)(imgH * escala);
+                        int dx = (getWidth() - dw) / 2;
+                        int dy = (getHeight() - dh) / 2;
+                        g2.drawImage(img, dx, dy, dw, dh, this);
+                    }
+                } else {
+                    g2.setColor(new Color(255, 255, 255, 60));
+                    g2.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 8, 8);
+                    g2.setColor(Color.WHITE);
+                    g2.setFont(new Font("Arial", Font.BOLD, 22));
+                    String plus = "+";
+                    FontMetrics fm = g2.getFontMetrics();
+                    g2.drawString(plus, (getWidth()- fm.stringWidth(plus)) / 2, (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+                }
+                g2.dispose();
+            }
+        };
+        btnImgAlt.setBounds(w - 130, 5, 70, h - 10);
+        btnImgAlt.setContentAreaFilled(false);
+        btnImgAlt.setBorderPainted(false);
+        btnImgAlt.setFocusPainted(false);
+        btnImgAlt.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnImgAlt.addActionListener(e -> escolherImagemAlternativa(index));
+        btnImgAlt.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    imagensAlternativasSelecionadas[index] = null;
+                    listaPerguntas.get(indiceAtual).fotoCaminhoAlternativas[index] = "";
+                    listaPerguntas.get(indiceAtual).idImagemAlternativaExistente[index] = null;
+                    listaPerguntas.get(indiceAtual).imagemAlternativaCarregada[index] = null;
+                }
+            }
+        });
+        btnImagensAlternativas[index] = btnImgAlt;
+        painel.add(btnImgAlt);
 
         JButton btnBolinha = new JButton() {
             @Override

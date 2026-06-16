@@ -22,6 +22,7 @@ public class JogarQuiz extends JFrame {
     private int pontuacaoTotal = 0;
     private boolean ajudaUsada = false;
     private int yPerguntaComImg, yPerguntaSemImg;
+    private Image[] imagensAlternativas =  new Image[4];
     private boolean mostrarFeedback = false;
     private boolean acertou = false;
     private Image imagemAtual = null;
@@ -36,9 +37,11 @@ public class JogarQuiz extends JFrame {
     static class Alternativa {
         String texto;
         boolean correta;
-        Alternativa(String texto, boolean correta) {
+        Integer idImagem;
+        Alternativa(String texto, boolean correta, Integer idImagem) {
             this.texto = texto;
             this.correta = correta;
+            this.idImagem = idImagem;
         }
     }
 
@@ -90,16 +93,19 @@ public class JogarQuiz extends JFrame {
                 );
 
                 PreparedStatement stmtA = con.prepareStatement(
-                    "SELECT resposta, correta FROM alternativa WHERE id_pergunta = ? ORDER BY id_alternativa"
+                    "SELECT resposta, correta, id_imagem FROM alternativa WHERE id_pergunta = ? ORDER BY id_alternativa"
                 );
 
                 stmtA.setInt(1, perg.id);
                 ResultSet rsA = stmtA.executeQuery();
 
                 while (rsA.next()) {
+                    int idImgAlt = rsA.getInt("id_imagem");
+                    Integer idImagemAlt = rsA.wasNull() ? null : idImgAlt;
                     perg.alternativas.add(new Alternativa(
                         rsA.getString("resposta"),
-                        rsA.getBoolean("correta")
+                        rsA.getBoolean("correta"),
+                        idImagemAlt
                     ));
                 }
 
@@ -213,7 +219,7 @@ public class JogarQuiz extends JFrame {
             btnAjuda.setEnabled(false);
         });
 
-        int wImg = 550, hImg = 260, wOpcao = 450, hOpcao = 60;
+        int wImg = 550, hImg = 260, wOpcao = 450, hOpcao = 130;
         int espacoX = 50, espacoY = 25, hPergunta = 80;
         int margemAbaixoImg = 30, margemAbaixoPergunta = 30;
 
@@ -248,7 +254,9 @@ public class JogarQuiz extends JFrame {
         int startYOpcoesCalc = yPerguntaComImg + hPergunta + margemAbaixoPergunta;
         yPerguntaSemImg = (startYOpcoesCalc - hPergunta) / 2;
         lblPergunta = new JLabel("", SwingConstants.CENTER);
-        lblPergunta.setBounds(xImg - 100, yPerguntaComImg, wImg + 200, hPergunta);
+        int wLabel = (int)(larguraCard * 0.60);
+        int xLabel = (larguraCard - wLabel) / 2;
+        lblPergunta.setBounds(xLabel, yPerguntaComImg, wLabel, hPergunta);
         lblPergunta.setFont(robotoBold28);
         lblPergunta.setForeground(Color.WHITE);
         cardPrincipal.add(lblPergunta);
@@ -366,6 +374,22 @@ public class JogarQuiz extends JFrame {
         }
         painelFoto.repaint();
 
+        for (int i = 0; i < 4; i++) {
+            imagensAlternativas[i] = null;
+            if (i < p.alternativas.size() && p.alternativas.get(i).idImagem != null) {
+                try (Connection conAlt = Conexao.conectar()) {
+                    PreparedStatement stmtImg = conAlt.prepareStatement(
+                        "SELECT arquivo_imagem FROM imagem WHERE id_imagem = ?"
+                    );
+                    stmtImg.setInt(1, p.alternativas.get(i).idImagem);
+                    ResultSet rsImg = stmtImg.executeQuery();
+                    if (rsImg.next()) {
+                        imagensAlternativas[i] = new ImageIcon(rsImg.getBytes("arquivo_imagem")).getImage();
+                    }
+                } catch (Exception ex) {}
+            }
+        }
+
         int novoY = (p.idImagem != null) ? yPerguntaComImg : yPerguntaSemImg;
         lblPergunta.setLocation(lblPergunta.getX(), novoY);
 
@@ -399,9 +423,14 @@ public class JogarQuiz extends JFrame {
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
             g2.setColor(Color.WHITE);
             g2.setFont(robotoBold24);
-            g2.drawString(letra, 30, 38);
-            g2.setFont(robotoBold20);
-            g2.drawString(textoAlternativas[index], 100, 38);
+            g2.drawString(letra, 30, h / 2 + 10);
+            if (imagensAlternativas[index] != null) {
+                int imgH = h - 10;
+                g2.drawImage(imagensAlternativas[index], 100, (h - imgH) / 2, imgH, imgH, null);
+            } else {
+                g2.setFont(robotoBold20);
+                g2.drawString(textoAlternativas[index], 100, h / 2 + 10);
+            }
             g2.dispose();
         }
     };
