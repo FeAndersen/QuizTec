@@ -74,7 +74,7 @@ id_aluno INT AUTO_INCREMENT PRIMARY KEY,
 nome_aluno VARCHAR(100) NOT NULL,
 email_aluno VARCHAR(255) NOT NULL UNIQUE,
 senha_aluno VARCHAR(255) NOT NULL,
-id_turma INT NOT NULL,
+id_turma INT NULL,
 FOREIGN KEY (id_turma) REFERENCES turma (id_turma)
 			ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -115,6 +115,7 @@ id_partida INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
 id_aluno INT NOT NULL,
 id_sessao INT NOT NULL,
 pontuacao_total INT UNSIGNED NOT NULL DEFAULT 0,
+acertos INT NOT NULL DEFAULT 0,
 data_hora_inicio TIMESTAMP NOT NULL DEFAULT current_timestamp,
 data_hora_fim TIMESTAMP NULL,
 status_partida ENUM('em_andamento', 'finalizado', 'ausente') NOT NULL DEFAULT 'em_andamento',

@@ -575,7 +575,7 @@ public class SeusAlunos extends JFrame {
             if(texto.equals("Remover")) {
                 try (Connection con = Conexao.conectar()) {
                     PreparedStatement stmt = con.prepareStatement(
-                        "DELETE FROM aluno WHERE id_aluno = ?"
+                        "UPDATE aluno SET id_turma = null WHERE id_aluno = ?"
                     );
                     stmt.setInt(1, aluno.id);
                     stmt.executeUpdate();
