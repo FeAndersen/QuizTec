@@ -21,6 +21,7 @@ public class JogarQuiz extends JFrame {
     private double multiplicador = 1.0;
     private int pontuacaoTotal = 0;
     private boolean ajudaUsada = false;
+    private int yPerguntaComImg, yPerguntaSemImg;
     private boolean mostrarFeedback = false;
     private boolean acertou = false;
     private Image imagemAtual = null;
@@ -213,7 +214,7 @@ public class JogarQuiz extends JFrame {
         });
 
         int wImg = 550, hImg = 260, wOpcao = 450, hOpcao = 60;
-        int espacoX = 50, espacoY = 25, hPergunta = 50;
+        int espacoX = 50, espacoY = 25, hPergunta = 80;
         int margemAbaixoImg = 30, margemAbaixoPergunta = 30;
 
         int alturaTotalConteudo = hImg + margemAbaixoImg + hPergunta + margemAbaixoPergunta + (hOpcao * 2) + espacoY;
@@ -226,9 +227,6 @@ public class JogarQuiz extends JFrame {
             @Override protected void paintComponent(Graphics g) {
                 if (imagemAtual != null) {
                     g.drawImage(imagemAtual, 0, 0, getWidth(), getHeight(), this);
-                } else {
-                    g.setColor(new Color(200, 200, 200));
-                    g.fillRect(0, 0, getWidth(), getHeight());
                 }
             }
         };
@@ -236,16 +234,18 @@ public class JogarQuiz extends JFrame {
         cardPrincipal.add(painelFoto);
 
         // Pergunta
-        int yPergunta = yImg + hImg + margemAbaixoImg;
+        yPerguntaComImg = yImg + hImg + margemAbaixoImg;
+        int startYOpcoesCalc = yPerguntaComImg + hPergunta + margemAbaixoPergunta;
+        yPerguntaSemImg = (startYOpcoesCalc - hPergunta) / 2;
         lblPergunta = new JLabel("", SwingConstants.CENTER);
-        lblPergunta.setBounds(xImg - 100, yPergunta, wImg + 200, hPergunta);
+        lblPergunta.setBounds(xImg - 100, yPerguntaComImg, wImg + 200, hPergunta);
         lblPergunta.setFont(robotoBold28);
         lblPergunta.setForeground(Color.WHITE);
         cardPrincipal.add(lblPergunta);
 
         // Alternativas
         int startXOpcoes = (larguraCard - (wOpcao * 2 + espacoX)) / 2;
-        int startYOpcoes = yPergunta + hPergunta + margemAbaixoPergunta;
+        int startYOpcoes = yPerguntaComImg + hPergunta + margemAbaixoPergunta;
 
         btnAlternativas[0] = criarBotaoAlternativa("A", 0, startXOpcoes, startYOpcoes, wOpcao,hOpcao);
         btnAlternativas[1] = criarBotaoAlternativa("B", 1, startXOpcoes + wOpcao + espacoX, startYOpcoes, wOpcao, hOpcao);
@@ -338,7 +338,7 @@ public class JogarQuiz extends JFrame {
     private void carregarQuestao () {
         Pergunta p = perguntas.get(questaoAtual);
         txtContador.setText((questaoAtual + 1) + "/" + perguntas.size());
-        lblPergunta.setText(p.enunciado);
+        lblPergunta.setText("<html><div style='text-allign-center'>" + p.enunciado + "</div></html>");
 
         imagemAtual = null;
 
@@ -355,6 +355,9 @@ public class JogarQuiz extends JFrame {
             } catch (Exception ex) {}
         }
         painelFoto.repaint();
+
+        int novoY = (p.idImagem != null) ? yPerguntaComImg : yPerguntaSemImg;
+        lblPergunta.setLocation(lblPergunta.getX(), novoY);
 
         for (int i = 0; i < 4; i++) {
             if (i < p.alternativas.size()) {
